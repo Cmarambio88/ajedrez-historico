@@ -4,8 +4,11 @@ Ajedrez 2D para Android con **ejércitos de la historia** en lugar de piezas cl�
 
 ## Ejércitos
 
-Grande Armée (Napoleón) · Imperio Mongol (Gengis Kan) · Ejército Rojo · Wehrmacht · Imperio Azteca · Ejército Británico (1815) · Conquistadores (Hernán Cortés como rey y La Malinche como reina) · Samuráis (1274–1281).
-Puedes enfrentar a cualquier pareja de ejércitos.
+Grande Armée (Napoleón) · Imperio Mongol (Gengis Kan) · Ejército Rojo · Wehrmacht · Imperio Azteca · Ejército Británico (1815) · Conquistadores (Hernán Cortés como rey y La Malinche como reina) · Samuráis (1274–1281) · **Atenas** (Pericles) · **Persia** (Jerjes I) · **Proletariado** (Lenin y Krúpskaya) · **Burguesía** (Carl Menger y Ayn Rand) · **Estados Unidos** (Vietnam, 1968) · **Vietnam** (Ho Chi Minh) · y un juego de **piezas clásicas blancas y negras** (estilo Staunton).
+Puedes enfrentar a cualquier pareja de ejércitos; la pantalla de preparativos trae «Duelos históricos» para elegir parejas con un toque.
+
+## Tabla de jugadas exportable
+En la partida, el botón de bitácora muestra una tabla con cada jugada en notación algebraica estándar (SAN), bando, pieza, origen y destino, capturas y jaques, más un resumen (jugadas, capturas por bando, resultado). Se exporta como **CSV** (separador `;`, abre directo en Excel en español), como **PGN** (compatible con Chess.com, Lichess y otros programas) o se copia al portapapeles. En Android se abre el menú «Compartir» (Drive, correo, WhatsApp…).
 
 ## Qué incluye
 

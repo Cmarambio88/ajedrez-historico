@@ -40,6 +40,10 @@
     </header>
     <div class="scroll">
       <div class="block">
+        <h3>Duelos históricos</h3>
+        <div class="duels" id="duels"></div>
+      </div>
+      <div class="block">
         <h3>Bando 1 <em>mueve primero</em></h3>
         <div class="army-row" id="rowW"></div>
       </div>
@@ -138,6 +142,7 @@
   <div class="grab"></div>
   <h2>Bitácora de campaña</h2>
   <div class="sheet-scroll" id="moves"></div>
+  <div class="xrow"><button class="btn" id="xCsv">Exportar CSV (Excel)</button><button class="btn" id="xPgn">Exportar PGN</button><button class="btn" id="xCopy">Copiar PGN</button></div>
   <button class="btn" data-close>Cerrar</button>
 </aside>
 
@@ -161,6 +166,7 @@
 
 <script src="js/engine.js"></script>
 <script src="js/pieces.js"></script>
+<script src="js/pieces2.js"></script>
 <script src="js/net.js"></script>
 <script src="js/app.js"></script>
 </body>

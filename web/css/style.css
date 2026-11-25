@@ -175,3 +175,16 @@ body.nocoords .coord{display:none}
 .dlg-btns .btn{padding:12px}
 @media (min-width:700px){ :root{--bw:min(94vw,calc(100vh - 290px),540px)} }
 @media (prefers-reduced-motion:reduce){ *{animation:none !important;transition:none !important} }
+
+.msum{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);padding:2px 2px 8px}
+.msum b{color:var(--gold)}
+.mt{overflow-x:auto}
+.mt table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}
+.mt th{position:sticky;top:0;background:var(--panel);text-align:left;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+.mt td{padding:5px 8px;border-bottom:1px dashed var(--line)}
+.mt tr.b td{background:rgba(255,255,255,.035)}
+.xrow{display:flex;gap:6px;margin:8px 0}.xrow .btn{flex:1;font-size:13px;padding:10px 4px}
+.duels{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:7px 11px;font-size:13px}
+.chip i{color:var(--muted);font-style:normal;font-size:11px}
+.chip.on{border-color:var(--gold);color:var(--gold)}

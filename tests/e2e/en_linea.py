@@ -42,7 +42,7 @@ with sync_playwright() as p:
     A.wait_for_timeout(9000); print('tras fallos de red, A ve:',repr(log(A)[-14:]))
     # tercero = espectador
     C=newpage('C'); C.click('[data-go=online]'); C.fill('#codeIn',code.lower()); C.click('#btnJoin'); C.wait_for_timeout(3300)
-    print('C (3.ª persona):',st(C),'| jugadas vistas:',len(__import__('re').findall('[–×]',log(C))))
+    print('C (3.ª persona):',st(C),'| jugadas vistas:',len(__import__('re').findall('→',log(C))))
     # mate del pastor para probar fin y rendición
     A.screenshot(path='/tmp/t/o_game.png')
     A.click('#btnMenu'); A.click('#mResign'); A.wait_for_timeout(200); A.click('#dlgBtns .btn.danger'); A.wait_for_timeout(1200)

@@ -13,7 +13,9 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.core.content.FileProvider
 import androidx.webkit.WebViewAssetLoader
+import java.io.File
 
 /**
  * Contenedor nativo: muestra el juego (carpeta /web, empaquetada como assets) en un WebView.
@@ -90,6 +92,27 @@ class MainActivity : Activity() {
                     putExtra(Intent.EXTRA_TEXT, text)
                 }
                 startActivity(Intent.createChooser(send, "Invitar a un amigo"))
+            }
+        }
+
+        /** Guarda el archivo en la caché de la app y abre el menú «Compartir» (Drive, correo, WhatsApp…). */
+        @JavascriptInterface
+        fun shareFile(name: String, mime: String, content: String) {
+            runOnUiThread {
+                try {
+                    val dir = File(cacheDir, "export").apply { mkdirs() }
+                    val safe = name.replace(Regex("[^A-Za-z0-9._-]"), "_")
+                    val f = File(dir, safe).apply { writeText(content, Charsets.UTF_8) }
+                    val uri = FileProvider.getUriForFile(this@MainActivity, "$packageName.files", f)
+                    val send = Intent(Intent.ACTION_SEND).apply {
+                        type = mime
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    startActivity(Intent.createChooser(send, "Exportar jugadas"))
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(this@MainActivity, "No se pudo exportar: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                }
             }
         }
 

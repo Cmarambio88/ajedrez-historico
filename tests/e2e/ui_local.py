@@ -6,7 +6,7 @@ def S(n): return (8-int(n[1]))*8+'abcdefgh'.index(n[0])
 def tap(pg,sq):
     b=pg.query_selector(f'#board .sq[data-s="{S(sq)}"]').bounding_box(); pg.mouse.click(b['x']+b['width']/2,b['y']+b['height']/2); pg.wait_for_timeout(60)
 def mv(pg,a,b): tap(pg,a); tap(pg,b); pg.wait_for_timeout(250)
-def nmoves(pg): return pg.evaluate("document.querySelectorAll('#moves .mv').length")  # filas
+def nmoves(pg): return pg.evaluate("document.querySelectorAll('#moves tbody tr').length")  # filas
 def logtxt(pg): return pg.inner_text('#moves').replace('\n',' ')
 with sync_playwright() as p:
     br=p.chromium.launch(**({'executable_path':os.environ['CHROME']} if os.environ.get('CHROME') else {}),args=['--no-sandbox'])
@@ -17,7 +17,7 @@ with sync_playwright() as p:
     # ---- máquina nivel 1
     A.click('[data-go=ai]'); A.click('#levels button[data-n="1"]'); A.click('#btnStart'); A.wait_for_timeout(300)
     mv(A,'e2','e4'); A.wait_for_function("document.querySelectorAll('.sq svg').length>=32 && !document.getElementById('status').classList.contains('think')",timeout=15000)
-    A.wait_for_timeout(500); print('IA respondió, filas bitácora:', A.evaluate("document.querySelectorAll('#moves .mv').length"), '| log:', A.evaluate("document.getElementById('moves').innerText.replace(/\\n/g,' ')"))
+    A.wait_for_timeout(500); print('IA respondió, filas bitácora:', A.evaluate("document.querySelectorAll('#moves tbody tr').length"), '| log:', A.evaluate("document.getElementById('moves').innerText.replace(/\\n/g,' ')"))
     # jugada ilegal / turno
     mv(A,'e4','e6'); print('ilegal ignorada -> status:',A.inner_text('#status'))
     # deshacer
@@ -38,7 +38,7 @@ with sync_playwright() as p:
     # ---- nivel 7: no bloquea
     A.click('[data-go=ai]'); A.click('#levels button[data-n="7"]'); A.click('#btnStart'); A.wait_for_timeout(300)
     A.evaluate("window.__t=0;setInterval(()=>window.__t++,50)")
-    mv(A,'e2','e4'); t0=time.time(); A.wait_for_function("(document.getElementById('moves').textContent.match(/[–×]/g)||[]).length>=2",timeout=30000)
+    mv(A,'e2','e4'); t0=time.time(); A.wait_for_function("(document.getElementById('moves').textContent.match(/→/g)||[]).length>=2",timeout=30000)
     dt=time.time()-t0; tk=A.evaluate("window.__t"); print(f'nivel 7 pensó {dt:.1f}s, ticks {tk} (≈{int(dt*20)})')
     # cambiar de pantalla mientras piensa y volver: no se cuela jugada
     mv(A,'d2','d4'); A.wait_for_timeout(300); A.evaluate("window.__back()"); A.wait_for_timeout(300)

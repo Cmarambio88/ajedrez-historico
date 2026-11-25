@@ -5,8 +5,8 @@ URL='http://localhost:8766/index.html'
 def S(n): return (8-int(n[1]))*8+'abcdefgh'.index(n[0])
 def tap(pg,sq):
     b=pg.query_selector(f'#board .sq[data-s="{S(sq)}"]').bounding_box(); pg.mouse.click(b['x']+b['width']/2,b['y']+b['height']/2); pg.wait_for_timeout(60)
-def plies(pg): return len(__import__('re').findall('[–×]',pg.evaluate("document.getElementById('moves').textContent")))
-def wait_plies(pg,n,to=30000): pg.wait_for_function(f"(document.getElementById('moves').textContent.match(/[–×]/g)||[]).length>={n}",timeout=to)
+def plies(pg): return len(__import__('re').findall('→',pg.evaluate("document.getElementById('moves').textContent")))
+def wait_plies(pg,n,to=30000): pg.wait_for_function(f"(document.getElementById('moves').textContent.match(/→/g)||[]).length>={n}",timeout=to)
 with sync_playwright() as p:
     br=p.chromium.launch(**({'executable_path':os.environ['CHROME']} if os.environ.get('CHROME') else {}),args=['--no-sandbox'])
     pg=br.new_context(viewport={'width':390,'height':844}).new_page(); errs=[]; pg.on('pageerror',lambda e:errs.append(str(e)))

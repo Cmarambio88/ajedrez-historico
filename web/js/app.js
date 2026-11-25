@@ -124,7 +124,12 @@ function openSetup(){
   $('btnStart').textContent = draft.mode==='online' ? 'Crear y obtener código' : 'Comenzar';
   renderSetup(); go('setup');
 }
+function renderDuels(){
+  $('duels').innerHTML = DUELS.map(([a,b],i) => `<button type="button" class="chip ${draft.w===a&&draft.b===b?'on':''}" data-i="${i}">${FACTIONS[a].name} <i>vs</i> ${FACTIONS[b].name}</button>`).join('');
+  $('duels').querySelectorAll('.chip').forEach(c => c.onclick = () => { const [a,b] = DUELS[+c.dataset.i]; draft.w = a; draft.b = b; store.set('ajh-draft', draft); renderSetup(); });
+}
 function renderSetup(){
+  renderDuels();
   for (const [col,id] of [['w','rowW'],['b','rowB']]){
     $(id).innerHTML = Object.entries(FACTIONS).map(([k,f]) =>
       `<button type="button" class="army ${draft[col]===k?'on':''} ${draft[other(col)]===k?'taken':''}" data-k="${k}" aria-pressed="${draft[col]===k}">`
@@ -393,11 +398,82 @@ function render(){
   if (on && net){ $('codeShow').textContent = net.code.toUpperCase(); const cn = $('conn'); cn.classList.toggle('ok', !!net.connected); cn.title = net.connected ? 'Conectado' : 'Reconectando…'; }
   if (over && !overShown){ overShown = true; saveLocal(); setTimeout(showOver, 450); }
 }
-function movesHTML(){
-  let h = '';
-  for (let i=0;i<log.length;i+=2) h += `<div class="mv"><span class="n">${i/2+1}.</span><span>${log[i].txt}</span><span>${log[i+1] ? log[i+1].txt : ''}</span></div>`;
-  return h;
+// ---- Notación algebraica estándar (SAN) y tabla de jugadas ----
+function sanRows(){
+  let st = initState(); const rows = [];
+  for (const e of log){
+    const m = e.m, p = st.b[m.f], t = p[1], next = applyMove(st, m);
+    let san;
+    if (m.castle) san = m.t > m.f ? 'O-O' : 'O-O-O';
+    else {
+      const cap = !!next.captured;
+      if (t==='P') san = (cap ? FILES[m.f%8] + 'x' : '') + sqName(m.t) + (m.promo ? '=' + m.promo : '');
+      else {
+        const rivals = legalMoves(st).filter(o => o.t===m.t && o.f!==m.f && st.b[o.f]===p);
+        let dis = '';
+        if (rivals.length){
+          const sameFile = rivals.some(o => o.f%8===m.f%8), sameRank = rivals.some(o => (o.f>>3)===(m.f>>3));
+          dis = !sameFile ? FILES[m.f%8] : !sameRank ? String(8-(m.f>>3)) : sqName(m.f);
+        }
+        san = t + dis + (cap ? 'x' : '') + sqName(m.t);
+      }
+    }
+    const chk = inCheck(next); const mate = chk && !legalMoves(next).length;
+    if (chk) san += mate ? '#' : '+';
+    rows.push({ n: Math.floor(rows.length/2)+1, col: p[0], side: p[0]==='w' ? 'Blancas' : 'Negras', army: FACTIONS[cfg[p[0]]].name,
+      piece: FACTIONS[cfg[p[0]]].names[t], san, from: sqName(m.f), to: sqName(m.t),
+      cap: next.captured ? FACTIONS[cfg[next.captured[0]]].names[next.captured[1]] : '', chk: mate ? 'Mate' : chk ? 'Jaque' : '' });
+    st = next;
+  }
+  return rows;
 }
+function gameResult(){
+  if (!log.length) return '*';
+  const moves = legalMoves(game);
+  if (!moves.length) return inCheck(game) ? (game.turn==='w' ? '0-1' : '1-0') : '1/2-1/2';
+  return /Victoria de <b>([^<]+)/.test(over||'') ? (RegExp.$1===facName('w') ? '1-0' : '0-1') : (over ? '1/2-1/2' : '*');
+}
+const esc = t => String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function movesHTML(){
+  const rows = sanRows();
+  const caps = c => rows.filter(r => r.col===c && r.cap).length;
+  let h = `<div class="msum"><span><b>${rows.length}</b> jugadas</span><span>Capturas: ${facName('w')} <b>${caps('w')}</b> · ${facName('b')} <b>${caps('b')}</b></span><span>Resultado: <b>${gameResult()}</b></span></div>`;
+  h += '<div class="mt"><table><thead><tr><th>N.º</th><th>Bando</th><th>Pieza</th><th>Jugada</th><th>Desde→Hasta</th><th>Captura</th><th>Estado</th></tr></thead><tbody>';
+  rows.forEach((r,i) => { h += `<tr class="${r.col}"><td>${i%2===0 ? r.n : ''}</td><td>${esc(r.army)}</td><td>${esc(r.piece)}</td><td><b>${esc(r.san)}</b></td><td>${r.from}→${r.to}</td><td>${esc(r.cap)}</td><td>${r.chk}</td></tr>`; });
+  return h + '</tbody></table></div>';
+}
+function exportName(ext){ return 'ajedrez-historico-' + new Date().toISOString().slice(0,10) + '.' + ext; }
+function buildCSV(){
+  const rows = sanRows(), q = v => '"' + String(v).replace(/"/g,'""') + '"';
+  const head = ['N.º jugada','Bando','Ejército','Pieza','Jugada (SAN)','Desde','Hasta','Captura','Estado'];
+  return '\ufeff' + [head, ...rows.map((r,i) => [i+1, r.side, r.army, r.piece, r.san, r.from, r.to, r.cap, r.chk])].map(r => r.map(q).join(';')).join('\r\n') + '\r\n';
+}
+function buildPGN(){
+  const rows = sanRows(), res = gameResult(), d = new Date().toISOString().slice(0,10).replace(/-/g,'.');
+  let t = `[Event "Ajedrez Histórico"]\n[Date "${d}"]\n[White "${facName('w')}"]\n[Black "${facName('b')}"]\n[Result "${res}"]\n\n`, line = '';
+  rows.forEach((r,i) => { line += (i%2===0 ? (r.n + '. ') : '') + r.san + ' '; });
+  line += res;
+  const out = []; let cur = '';
+  for (const w of line.split(' ')){ if ((cur + ' ' + w).trim().length > 78){ out.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); }
+  out.push(cur);
+  return t + out.join('\n') + '\n';
+}
+function exportFile(kind){
+  if (!log.length) return toast('Aún no hay jugadas que exportar.');
+  const csv = kind==='csv', name = exportName(csv ? 'csv' : 'pgn'), data = csv ? buildCSV() : buildPGN(), mime = csv ? 'text/csv' : 'application/x-chess-pgn';
+  if (native && native.shareFile){ native.shareFile(name, mime, data); return; }
+  const url = URL.createObjectURL(new Blob([data], { type: mime + ';charset=utf-8' }));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500); toast('Archivo ' + name + ' generado');
+}
+$('xCsv').onclick = () => exportFile('csv');
+$('xPgn').onclick = () => exportFile('pgn');
+$('xCopy').onclick = () => {
+  if (!log.length) return toast('Aún no hay jugadas.');
+  const t = buildPGN();
+  if (native && native.copy){ native.copy(t); toast('Jugadas copiadas'); return; }
+  try { navigator.clipboard.writeText(t).then(() => toast('Jugadas copiadas'), () => toast('No se pudo copiar')); } catch(e){ toast('No se pudo copiar'); }
+};
 async function showOver(){
   if (!over) return;
   const text = over.replace(/<[^>]+>/g, '');
