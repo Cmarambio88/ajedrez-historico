@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14110d">
+<title>Ajedrez Histórico</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%2314110d%27/%3E%3Ccircle cx=%2716%27 cy=%2711%27 r=%275%27 fill=%27%23c9a24a%27/%3E%3Cpath d=%27M10 26h12l-2-11h-8z%27 fill=%27%23c9a24a%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-board="wood">
+<main id="app">
+
+  <!-- INICIO -->
+  <section class="view" id="v-home">
+    <div class="home-top">
+      <button class="icon-btn" id="btnSettings" aria-label="Ajustes">⚙</button>
+    </div>
+    <div class="hero">
+      <div class="crest" id="crest"></div>
+      <h1>Ajedrez<br><span>Histórico</span></h1>
+      <p class="tag">Ejércitos de la historia sobre el tablero</p>
+    </div>
+    <div class="menu">
+      <button class="btn resume" id="btnResume" hidden></button>
+      <button class="btn primary" data-go="ai"><b>Contra la máquina</b><small>7 niveles de dificultad</small></button>
+      <button class="btn" data-go="pvp"><b>Dos jugadores</b><small>En el mismo teléfono</small></button>
+      <button class="btn" data-go="online"><b>En línea con un amigo</b><small>Con un código, sin cuentas</small></button>
+      <button class="btn ghost" id="btnArmies">Conocer los ejércitos</button>
+    </div>
+    <footer class="foot">Software libre · Licencia MIT</footer>
+  </section>
+
+  <!-- PREPARATIVOS -->
+  <section class="view" id="v-setup">
+    <header class="bar">
+      <button class="icon-btn" data-back aria-label="Volver">‹</button>
+      <h2 id="setupTitle">Nueva partida</h2>
+      <span class="bar-gap"></span>
+    </header>
+    <div class="scroll">
+      <div class="block">
+        <h3>Bando 1 <em>mueve primero</em></h3>
+        <div class="army-row" id="rowW"></div>
+      </div>
+      <div class="block">
+        <h3>Bando 2</h3>
+        <div class="army-row" id="rowB"></div>
+      </div>
+      <div class="block" id="blkSide">
+        <h3>Tú juegas con</h3>
+        <div class="seg" id="segSide">
+          <button data-v="w">Bando 1</button><button data-v="b">Bando 2</button><button data-v="r">Al azar</button>
+        </div>
+      </div>
+      <div class="block" id="blkLevel">
+        <h3>Dificultad <em id="lvlName"></em></h3>
+        <div class="levels" id="levels"></div>
+        <p class="hint" id="lvlHint"></p>
+      </div>
+    </div>
+    <div class="dock"><button class="btn primary big" id="btnStart">Comenzar</button></div>
+  </section>
+
+  <!-- EN LÍNEA: crear o unirse -->
+  <section class="view" id="v-online">
+    <header class="bar">
+      <button class="icon-btn" data-back aria-label="Volver">‹</button>
+      <h2>En línea</h2>
+      <span class="bar-gap"></span>
+    </header>
+    <div class="scroll">
+      <div class="panel">
+        <h3>Crear una partida</h3>
+        <p class="hint">Eliges los ejércitos y recibes un código para pasárselo a tu amigo.</p>
+        <button class="btn primary" id="btnCreate">Crear partida</button>
+      </div>
+      <div class="panel">
+        <h3>Unirse con un código</h3>
+        <p class="hint">Escribe el código que te envió tu amigo.</p>
+        <input id="codeIn" placeholder="CÓDIGO" maxlength="8" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text">
+        <button class="btn" id="btnJoin">Unirse</button>
+        <p class="hint err" id="joinErr" hidden></p>
+      </div>
+      <p class="hint center">Las jugadas viajan por internet; ambos necesitan conexión.</p>
+    </div>
+  </section>
+
+  <!-- PARTIDA -->
+  <section class="view" id="v-game">
+    <header class="bar">
+      <button class="icon-btn" data-back aria-label="Salir">‹</button>
+      <h2 id="gameTitle">Partida</h2>
+      <span class="conn" id="conn" hidden title="Conexión"></span>
+      <button class="icon-btn" id="btnMenu" aria-label="Menú">⋯</button>
+    </header>
+    <div class="invite" id="invite" hidden>
+      <div><small>Código de la partida</small><div class="code" id="codeShow"></div></div>
+      <button class="btn small primary" id="btnShare">Compartir</button>
+    </div>
+    <div class="stage">
+      <div class="strip" id="pTop"><span class="dot"></span><span class="who"><b class="lbl"></b><small class="role"></small></span><span class="caps"></span></div>
+      <div id="boardWrap"><div id="board" role="grid" aria-label="Tablero de ajedrez"></div></div>
+      <div class="strip" id="pBot"><span class="dot"></span><span class="who"><b class="lbl"></b><small class="role"></small></span><span class="caps"></span></div>
+      <div id="status" aria-live="polite"></div>
+    </div>
+    <nav class="tools">
+      <button id="tUndo"><i>↶</i><span>Deshacer</span></button>
+      <button id="tFlip"><i>⇅</i><span>Girar</span></button>
+      <button id="tLog"><i>≡</i><span>Bitácora</span></button>
+      <button id="tNew"><i>✦</i><span>Nueva</span></button>
+    </nav>
+  </section>
+</main>
+
+<!-- HOJAS INFERIORES -->
+<div class="overlay" id="ov" hidden></div>
+
+<aside class="sheet" id="sh-settings" hidden>
+  <div class="grab"></div>
+  <h2>Ajustes</h2>
+  <h3>Tablero</h3>
+  <div class="themes" id="themes"></div>
+  <label class="switch"><input type="checkbox" id="optGlyph"><span>Símbolo clásico en cada pieza</span></label>
+  <label class="switch"><input type="checkbox" id="optHints"><span>Mostrar jugadas posibles</span></label>
+  <label class="switch"><input type="checkbox" id="optCoords"><span>Mostrar coordenadas</span></label>
+  <button class="btn" data-close>Listo</button>
+</aside>
+
+<aside class="sheet tall" id="sh-armies" hidden>
+  <div class="grab"></div>
+  <h2>Los ejércitos</h2>
+  <div class="sheet-scroll" id="armiesList"></div>
+  <button class="btn" data-close>Cerrar</button>
+</aside>
+
+<aside class="sheet tall" id="sh-log" hidden>
+  <div class="grab"></div>
+  <h2>Bitácora de campaña</h2>
+  <div class="sheet-scroll" id="moves"></div>
+  <button class="btn" data-close>Cerrar</button>
+</aside>
+
+<aside class="sheet" id="sh-menu" hidden>
+  <div class="grab"></div>
+  <h2>Partida</h2>
+  <button class="btn" id="mArmies">Ver los ejércitos</button>
+  <button class="btn" id="mSettings">Ajustes</button>
+  <button class="btn danger" id="mResign" hidden>Rendirme</button>
+  <button class="btn" data-close>Cerrar</button>
+</aside>
+
+<div class="dialog" id="dlg" hidden>
+  <div class="dlg-box">
+    <h2 id="dlgTitle"></h2>
+    <p id="dlgText"></p>
+    <div class="dlg-opts" id="dlgOpts"></div>
+    <div class="dlg-btns" id="dlgBtns"></div>
+  </div>
+</div>
+
+<script src="js/engine.js"></script>
+<script src="js/pieces.js"></script>
+<script src="js/net.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

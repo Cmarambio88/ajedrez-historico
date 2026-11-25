@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Peón dorado -->
+    <path android:fillColor="#C9A24A"
+        android:pathData="M45,36a9,9 0,1 0,18 0a9,9 0,1 0,-18 0z" />
+    <path android:fillColor="#C9A24A" android:pathData="M42,48h24v5h-24z" />
+    <path android:fillColor="#C9A24A" android:pathData="M46,53h16l5,19h-26z" />
+    <path android:fillColor="#E6C778" android:pathData="M36,72h36v7h-36z" />
+</vector>
