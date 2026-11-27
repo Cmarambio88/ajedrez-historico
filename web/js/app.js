@@ -97,7 +97,12 @@ document.querySelectorAll('[data-back]').forEach(b => b.onclick = () => window._
 
 // ============================== Inicio ==============================
 const savedLabel = l => typeof l === 'string' ? l : (l.mode==='ai' ? t('Contra la máquina') + ' · ' + lvlName(l.lvl) : t('Dos jugadores'));
+async function pickLang(){
+  const v = await dialog({ title:t('Idioma'), opts:Object.entries(LANGS).map(([k,n]) => ({ value:k, html:`<span style="font-size:17px;${k===LANG?'color:var(--gold);font-weight:700':''}">${n}</span>` })), buttons:[{label:t('Cancelar'), value:false}] });
+  if (v && LANGS[v]){ setLang(v); applyLang(); }
+}
 function renderHome(){
+  $('btnLang').textContent = '🌐 ' + LANG.toUpperCase();
   $('crest').innerHTML = pieceSVG('K', draft.w, { noBadge:true }) + pieceSVG('K', draft.b, { noBadge:true });
   const r = store.get('ajh-resume', null), b = $('btnResume');
   if (r && r.type==='local' && store.get('ajh-local', null)){
@@ -111,6 +116,8 @@ document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
   if (m==='online'){ draft.mode = 'online'; $('joinErr').hidden = true; go('online'); return; }
   draft.mode = m; openSetup();
 });
+$('btnLang').onclick = pickLang;
+$('mLang').onclick = () => { closeSheet(); pickLang(); };
 $('btnArmies').onclick = () => { fillArmiesSheet(); openSheet('sh-armies'); };
 $('btnSettings').onclick = () => { fillSettings(); openSheet('sh-settings'); };
 $('btnResume').onclick = async () => {

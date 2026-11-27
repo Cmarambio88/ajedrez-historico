@@ -10,10 +10,10 @@ Grande Armée (Napoleón) · Imperio Mongol (Gengis Kan) · Ejército Rojo · We
 Puedes enfrentar a cualquier pareja de ejércitos; la pantalla de preparativos trae «Duelos históricos» para elegir parejas con un toque.
 
 ## Idiomas
-Español, English, Français y Português. Se elige solo según el idioma del teléfono y se puede cambiar en Ajustes → Idioma. Los nombres de los ejércitos y de cada pieza también están traducidos; la notación de la tabla usa las letras de cada idioma, y el PGN exportado siempre usa la notación internacional.
+Español, English, Français y Português. Se elige solo según el idioma del teléfono y se puede cambiar con el botón **🌐 ES/EN/FR/PT** de la portada o desde el menú de la partida. Los nombres de los ejércitos y de cada pieza también están traducidos; la notación de la tabla usa las letras de cada idioma, y el PGN exportado siempre usa la notación internacional.
 
 ## Ayudas para no confundirse con las piezas
-- Cada ejército tiene su propia figura para cada pieza, y **no todos tienen una «reina» literal** (p. ej. un general o un corresponsal). Por eso, al tocar cualquier pieza —propia o rival— aparece una ficha con su nombre, su **papel en el ajedrez** (Rey, Reina, Torre, Alfil, Caballo, Peón) y cómo se mueve.
+- Cada ejército tiene su propia figura para cada pieza, y **todos los ejércitos tienen una reina propia** (Josefina, Börte, Madre Patria, Germania, Tecuichpo, la reina Carlota, Dama Libertad, La Malinche, Tomoe Gozen, Atenea, Artemisia, Krúpskaya, Ayn Rand, Trưng Trắc), pero igual, al tocar cualquier pieza —propia o rival— aparece una ficha con su nombre, su **papel en el ajedrez** (Rey, Reina, Torre, Alfil, Caballo, Peón) y cómo se mueve.
 - Botón **Guía** con las 12 piezas de la partida y su movimiento.
 - Opción **Formas de piezas clásicas** (Ajustes): usa las siluetas del ajedrez de siempre con los colores de cada ejército.
 - Símbolo clásico en cada pieza (activado por defecto), última jugada y jaque resaltados.

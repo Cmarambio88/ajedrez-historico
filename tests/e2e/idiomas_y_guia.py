@@ -68,6 +68,19 @@ with sync_playwright() as p:
         check(f'cambio en caliente → {lang}',EXPECT[lang]['h'] in pg.inner_text('.menu') and pg.evaluate("LANG")==lang)
     pg.click('#langs button[data-k=en]'); pg.wait_for_timeout(150); pg.click('#sh-settings [data-close]')
     pg.reload(); pg.wait_for_timeout(300); check('el idioma elegido se recuerda',EXPECT['en']['h'] in pg.inner_text('.menu'))
+    # 2b) botón de idioma visible en la portada y en el menú de partida
+    pg.goto(URL); pg.wait_for_timeout(300)
+    check('botón de idioma en portada muestra 🌐 EN', pg.inner_text('#btnLang')=='🌐 EN' and pg.is_visible('#btnLang'), pg.inner_text('#btnLang'))
+    pg.click('#btnLang'); pg.wait_for_timeout(200)
+    opts=pg.evaluate("[...document.querySelectorAll('#dlgOpts button')].map(b=>b.textContent)"); check('el selector ofrece los 4 idiomas',opts==['Español','English','Français','Português'],str(opts))
+    pg.click('#dlgOpts button:has-text("Français")'); pg.wait_for_timeout(250)
+    check('botón de idioma cambia a FR y traduce',pg.inner_text('#btnLang')=='🌐 FR' and 'Contre l’ordinateur' in pg.inner_text('.menu'))
+    pg.click('[data-go=pvp]'); pg.click('#btnStart'); pg.wait_for_timeout(300); pg.click('#btnMenu'); pg.wait_for_timeout(150)
+    check('menú de partida tiene botón Langue',pg.is_visible('#mLang') and pg.inner_text('#mLang')=='Langue')
+    pg.click('#mLang'); pg.wait_for_timeout(200); pg.click('#dlgOpts button:has-text("English")'); pg.wait_for_timeout(250)
+    check('cambiar idioma en plena partida conserva la partida',pg.is_visible('#board') and pg.inner_text('#gameTitle')=='Two players',pg.inner_text('#gameTitle'))
+    pg.click('#btnMenu'); pg.click('#mSettings'); pg.wait_for_timeout(100); pg.evaluate("document.getElementById('optClassic').checked&&0")
+    pg.click('#sh-settings [data-close]'); pg.goto(URL); pg.wait_for_timeout(300)
     # 3) formas clásicas
     pg.click('#btnSettings'); pg.click('#optClassic'); pg.wait_for_timeout(150); pg.click('#sh-settings [data-close]')
     pg.click('[data-go=pvp]'); pg.click('#btnStart'); pg.wait_for_timeout(300)
@@ -79,5 +92,11 @@ with sync_playwright() as p:
       const es=Object.keys(I18N.en);const miss=[];for(const l of ['fr','pt'])for(const k of es)if(I18N[l][k]===undefined)miss.push(l+':'+k);
       const extra=[];for(const l of ['fr','pt'])for(const k in I18N[l])if(I18N.en[k]===undefined)extra.push(l+':'+k);return {bad,miss,extra}}""")
     check('16 ejércitos × 3 idiomas completos; diccionarios simétricos',not r['bad'] and not r['miss'] and not r['extra'],json.dumps(r,ensure_ascii=False))
+    # 5) cada ejército tiene una reina de verdad (nombre propio de mujer/alegoría femenina)
+    q=pg.evaluate("Object.fromEntries(Object.entries(FACTIONS).map(([k,f])=>[k,f.names.Q]))")
+    want={'napoleon':'Emperatriz Josefina','mongol':'Börte, gran jatún','soviet':'Madre Patria','wehrmacht':'Germania','azteca':'Reina Tecuichpo','britanicos':'Reina Carlota','eeuu':'Dama Libertad','conquistadores':'La Malinche','samurai':'Tomoe Gozen','atenas':'Atenea','persia':'Artemisia de Caria','proletariado':'Nadezhda Krúpskaya','burguesia':'Ayn Rand','vietnam':'Trưng Trắc'}
+    bad={k:q[k] for k in want if q.get(k)!=want[k]}
+    check('14 ejércitos históricos con reina propia (+2 juegos clásicos)',not bad and len(q)==16,str(bad))
+    sv=pg.evaluate("Object.keys(FACTIONS).map(k=>pieceSVG('Q',k,{noBadge:true}))"); check('las 16 reinas se dibujan distintas',len(set(sv))==16,str(len(set(sv))))
     br.close()
 print('RESULTADO:', 'TODO OK' if all(ok) else 'HAY FALLAS', f'({sum(ok)}/{len(ok)})')

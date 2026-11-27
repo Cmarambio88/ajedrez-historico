@@ -352,6 +352,58 @@ FACTIONS.vietnam = {
   }
 };
 
+// ---------- Reinas propias de cada ejército ----------
+const lips = () => pth('M47.3 34.8 Q50 36.6 52.7 34.8 Q50 35.7 47.3 34.8 Z','#a02a2a',0.5);
+const lashes = () => ln('M44.5 28.5 Q47 27.2 49.6 28.5 M50.4 28.5 Q53 27.2 55.5 28.5','#17110e',1);
+const longHair = c => hairCap(c) + pth('M40.8 29 Q37.5 44 42.5 54 L45 38 Z',c,1) + pth('M59.2 29 Q62.5 44 57.5 54 L55 38 Z',c,1);
+const diadem = (c='#e0b040') => pth('M42 22.5 L44 15.5 L47 20 L50 13.5 L53 20 L56 15.5 L58 22.5 Q50 20 42 22.5 Z',c,1) + [44,50,56].map((x,i) => dot(x,i===1?15.5:17.8,1,'#c62828')).join('');
+const muralCrown = () => pth('M41.5 24 L41.5 14 H44.5 V16.6 H47.2 V14 H52.8 V16.6 H55.5 V14 H58.5 V24 Q50 21 41.5 24 Z','#d4af37',1.1) + ln('M41.8 19.5 H58.2','#8a6a1a',0.8);
+const quetzal = () => pth('M43 24 Q36 8 42 -2 Q44 8 47 13 Z','#2f8f5a',1) + pth('M57 24 Q64 8 58 -2 Q56 8 53 13 Z','#2f8f5a',1) + pth('M45 22 Q43 4 50 -4 Q57 4 55 22 Q50 19 45 22 Z','#2aa6a0',1.1) + ln('M50 -2 V18','#e0b040',1)
+   + rect(42.4,21,15.2,2.6,'#e0b040',0.7);
+const boqtaq = () => pth('M43 24 L45 6 Q50 1 55 6 L57 24 Q50 21 43 24 Z','#b3402c',1.2) + ln('M44.4 15 H55.6 M44 20 H56','#e0b040',1.2) + ln('M50 1.5 V -3.5','#e0b040',1.4) + pth('M48 -3 L50 -6.5 L52 -3 Z','#2f8f5a',0.8)
+   + ln('M41.6 27 Q39 37 41.6 46 M58.4 27 Q61 37 58.4 46','#17130f',2.2);
+const libertyCrown = () => [[-38,-6],[-26,-10],[-13,-12],[0,-13],[13,-12],[26,-10],[38,-6]].map(([a,h]) => `<path d="M${50+a*0.18} 22.5 L${50+a*0.42} ${22.5+h*1.1}" stroke="#d9c970" stroke-width="2.1" stroke-linecap="round"/>`).join('') + pth('M41.5 26 Q41 14.5 50 14 Q59 14.5 58.5 26 Q56 21 50 20.6 Q44 21 41.5 26 Z','#4f9e8a',1.1) + rect(41.5,21,17,2,'#d9c970',0.5);
+const bonnet = () => pth('M41 28 Q39.5 14 50 13 Q60.5 14 59 28 Q57 21 50 20.5 Q43 21 41 28 Z','#e8e4da',1) + ln('M43 15 Q50 10 57 15','#c9c4b8',0.8) + diadem('#d4af37').replace(/M42 22.5/,'M42 20');
+
+FACTIONS.napoleon.names.Q = 'Emperatriz Josefina';
+FACTIONS.napoleon.draw.Q = () => figure({scale:.95, longCoat:true, coat:'#f1ece0', sleeve:'#f1ece0', boots:'#8a6a3d', hat:longHair('#4a3220').replace('M40.8 29','M40.8 29') + diadem(), face:lips()+lashes(), rightArm:'chest',
+    torso: pth('M39 41 Q50 37 61 41 L60 50 Q50 54 40 50 Z','#f1ece0',0.9) + ln('M40 51 Q50 55 60 51','#1f6b3f',2.6) + ln('M36 78 Q50 82 64 78','#c9a24a',1.4)
+           + [43,46,50,54,57].map(x => dot(x,44.8,0.8,'#efe6cf')).join('') + ln('M41 54 L37 80 M59 54 L63 80','#d6cdb4',0.8),
+    front: pth('M29 52 H38 V62 H29 Z','#6b4423',0.9) + ln('M31 55 H36','#e0b040',0.8)});
+
+FACTIONS.mongol.names.Q = 'Börte, gran jatún';
+FACTIONS.mongol.draw.Q = () => figure({scale:.95, longCoat:true, coat:'#b3402c', sleeve:'#b3402c', boots:'#3b2a1e', hat:boqtaq(), face:lips()+lashes(), rightArm:'chest',
+    torso: pth('M38 40 Q50 36.5 62 40 L66 81 Q50 84 34 81 Z','#b3402c',0.9) + pth('M38 40 L62 66 L58 72 L36 50 Z','#2f6db3',0.9) + ln('M36 66 Q50 70 64 66','#e0b040',2) + ln('M36 74 Q50 78 64 74','#e0b040',1.2)
+           + ln('M38.5 42 L40 80','#e0b040',1), front: cir(33,52,3.2,'#e0b040',0.8) + ln('M33 55 V64','#e0b040',1.2)});
+
+FACTIONS.soviet.names.Q = 'Madre Patria';
+FACTIONS.soviet.draw.Q = () => figure({scale:.95, longCoat:true, coat:'#d9dde2', sleeve:'#d9dde2', boots:'#8a8d92', hat:longHair('#2a1f18'), face:lips()+lashes(), rightArm:'raised',
+    torso: pth('M38 40 Q50 36.5 62 40 L60 52 Q50 56 40 52 Z','#c4161c',0.9) + star(50,46,3.4,'#f2c200','#7a5a00',0.3) + ln('M37 66 Q50 70 63 66','#c4161c',2.4) + ln('M40 52 L36 80 M60 52 L64 80','#b9bdc3',0.8),
+    front: ln('M74 27 L88 -2','#c9ccd0',2.2) + ln('M71.6 25.8 L77 28.5','#8a8d92',2.2)});
+
+FACTIONS.wehrmacht.names.Q = 'Germania';
+FACTIONS.wehrmacht.draw.Q = () => figure({scale:.95, longCoat:true, coat:'#4a5044', sleeve:'#4a5044', boots:'#151515', hat:longHair('#d6b36a') + muralCrown(), face:lips()+lashes(), rightArm:'chest',
+    torso: pth('M39 41 Q50 37 61 41 L60 53 Q50 57 40 53 Z','#a9afb7',1.1) + ln('M44 44 L56 50 M56 44 L44 50','#8d939b',0.8) + ln('M37 66 Q50 70 63 66','#c9ccd0',2) + ln('M40 53 L36 80 M60 53 L64 80','#3a3f37',0.8),
+    front: pth('M26 50 H40 V66 Q33 72 26 66 Z','#17130f',1) + pth('M26 55 H40 V60 H26 Z','#c62828',0.6) + pth('M26 60 H40 V64.5 Q33 69 26 64.5 Z','#e0b040',0.6)});
+
+FACTIONS.azteca.names.Q = 'Reina Tecuichpo';
+FACTIONS.azteca.draw.Q = () => figure({scale:.95, longCoat:true, skin:AZ_SKIN, coat:'#f3efe2', sleeve:'#f3efe2', boots:'#6a4a2a', hat:longHair('#17110e') + quetzal(), face:lips()+lashes(), rightArm:'chest',
+    torso: pth('M38.5 41 Q50 37.5 61.5 41 L60.5 57 Q50 61 39.5 57 Z','#f3efe2',0.9) + ln('M40 46 H60 M40.5 51 H59.5 M41 56 H59','#c8102e',1.4) + [[44,44],[50,44],[56,44]].map(([x,y]) => dot(x,y,1,'#2aa6a0')).join('')
+           + ln('M36 70 Q50 74 64 70','#c8102e',2) + ln('M36 77 Q50 81 64 77','#2aa6a0',1.6),
+    front: cir(33,57,3.4,'#e0b040',0.8) + ln('M33 60.5 V66','#2f8f5a',1.6)});
+
+FACTIONS.britanicos.names.Q = 'Reina Carlota';
+FACTIONS.britanicos.draw.Q = () => figure({scale:.95, longCoat:true, coat:'#2f4f9a', sleeve:'#2f4f9a', boots:'#1a1a1a', hat:bonnet(), face:lips()+lashes(), rightArm:'raised',
+    torso: pth('M38.5 41 Q50 36 61.5 41 L60.5 50 Q50 54 39.5 50 Z','#f3efe2',0.9) + [[42,43.5],[46,45.5],[50,46.5],[54,45.5],[58,43.5]].map(([x,y]) => cir(x,y,1.1,'#17130f',0.3)).join('')
+           + pth('M36 66 Q50 74 64 66 L66 82 Q50 86 34 82 Z','#243f7f',0.8) + ln('M36 62 Q50 66 64 62','#e0b040',1.8) + cir(50,52,1.6,'#c62828',0.5),
+    front: ln('M74 30 L77 84','#e0b040',1.8) + cir(74,28,3.4,'#e0b040',0.8) + dot(74,28,1.3,'#c62828')});
+
+FACTIONS.eeuu.names.Q = 'Dama Libertad';
+FACTIONS.eeuu.draw.Q = () => figure({scale:.95, longCoat:true, coat:'#6fb3a0', sleeve:'#6fb3a0', boots:'#4f7d70', hat:longHair('#5f9a88') + libertyCrown(), face:lips()+lashes(), rightArm:'raised',
+    torso: pth('M38.5 41 Q50 37 61.5 41 L60.5 55 Q50 59 39.5 55 Z','#7fc3b0',0.9) + ln('M41 44 Q50 52 59 44 M42 52 L58 52','#4f9e8a',1) + ln('M36 72 Q50 76 64 72','#4f9e8a',1.6),
+    front: ln('M74 27 L77 6','#6b4a2a',1.8) + pth('M72 6.5 Q75 -2 78 6.5 Z','#f2c200',0.8) + pth('M72.6 6 H77.4 L76.6 12 H73.4 Z','#c9a24a',0.8) + pth('M74.5 3 Q75.5 -1 76.6 3 Q75.6 5 74.5 3 Z','#e8742a',0.4)
+           + pth('M26 50 H38 V62 H26 Z','#d9c970',1) + ln('M28 54 H36 M28 57 H36','#8a7a30',0.7)});
+
 for (const [k, col, shade, accent, nm, blurb] of [
   ['blancas', '#f4efe3', '#b9ae92', '#8a7a52', 'Piezas blancas', 'El juego clásico: piezas de ajedrez tipo Staunton, talladas en marfil.'],
   ['negras',  '#2a2623', '#0d0b0a', '#d4af37', 'Piezas negras', 'El juego clásico: piezas de ajedrez tipo Staunton, talladas en ébano.']

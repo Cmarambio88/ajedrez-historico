@@ -46,7 +46,9 @@ h1,h2,h3{font-family:var(--serif);margin:0;font-weight:600}
 .icon-btn:active{background:var(--panel2)}
 
 /* ---- inicio ---- */
-.home-top{display:flex;justify-content:flex-end;padding:8px 10px 0}
+.home-top{display:flex;justify-content:flex-end;align-items:center;gap:4px;padding:8px 10px 0}
+.langbtn{height:38px;padding:0 14px;border-radius:999px;border:1px solid var(--gold);color:var(--gold);font-size:14px;font-weight:600;background:var(--panel)}
+.langbtn:active{background:var(--panel2)}
 .hero{text-align:center;padding:2vh 20px 2vh}
 .crest{display:flex;justify-content:center;align-items:flex-end;height:min(24vh,170px);margin-bottom:6px}
 .crest svg{height:100%;width:auto;filter:drop-shadow(0 8px 14px #000a)}
@@ -200,3 +202,4 @@ body.nocoords .coord{display:none}
 .gd-txt em{font-style:normal;color:var(--gold);font-weight:600;margin-left:4px;font-size:12px;border:1px solid var(--gold);border-radius:999px;padding:1px 7px}
 .gd-txt small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
 .legend small,.dlg-opts small{display:block;color:var(--gold);font-size:11px}
+.dlg-opts button{min-width:78px;width:auto;padding:10px 14px}
