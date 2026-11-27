@@ -23,7 +23,8 @@ const THEMES = {
   wood:{ name:'Madera', l:'#e9dcbc', d:'#9b7a52' }, classic:{ name:'Clásico', l:'#ececec', d:'#484848' },
   blue:{ name:'Azul', l:'#cfe7f7', d:'#26558a' },    green:{ name:'Verde', l:'#dcebd0', d:'#2f6a3d' }
 };
-const settings = Object.assign({ board:'wood', glyph:true, hints:true, coords:true }, store.get('ajh-set', {}));
+const levelInfo = n => t(LEVEL_INFO[n]);
+const settings = Object.assign({ board:'wood', glyph:true, hints:true, coords:true, classic:false }, store.get('ajh-set', {}));
 const draft = Object.assign({ mode:'ai', w:'napoleon', b:'mongol', human:'w', lvl:3 }, store.get('ajh-draft', {}));
 if (!FACTIONS[draft.w] || !FACTIONS[draft.b] || draft.w===draft.b){ draft.w = 'napoleon'; draft.b = 'mongol'; }
 if (!LEVELS[draft.lvl]) draft.lvl = 3;
@@ -32,7 +33,7 @@ function applySettings(){
   if (!THEMES[settings.board]) settings.board = 'wood';
   document.body.dataset.board = settings.board;
   document.body.classList.toggle('nocoords', !settings.coords);
-  showGlyph = !!settings.glyph;
+  showGlyph = !!settings.glyph; classicShapes = !!settings.classic;
   store.set('ajh-set', settings);
 }
 
@@ -73,7 +74,7 @@ function dialog({ title, text='', opts=null, buttons }){
     $('dlg').hidden = false;
   });
 }
-const confirmBox = (title, text, ok, danger) => dialog({ title, text, buttons:[{label:'Cancelar', value:false},{label:ok, value:true, primary:!danger, danger}] });
+const confirmBox = (title, text, ok, danger) => dialog({ title, text, buttons:[{label:t('Cancelar'), value:false},{label:ok, value:true, primary:!danger, danger}] });
 let toastT = null;
 function toast(msg){
   let t = $('toast');
@@ -95,13 +96,14 @@ window.__back = () => {
 document.querySelectorAll('[data-back]').forEach(b => b.onclick = () => window.__back());
 
 // ============================== Inicio ==============================
+const savedLabel = l => typeof l === 'string' ? l : (l.mode==='ai' ? t('Contra la máquina') + ' · ' + lvlName(l.lvl) : t('Dos jugadores'));
 function renderHome(){
   $('crest').innerHTML = pieceSVG('K', draft.w, { noBadge:true }) + pieceSVG('K', draft.b, { noBadge:true });
   const r = store.get('ajh-resume', null), b = $('btnResume');
   if (r && r.type==='local' && store.get('ajh-local', null)){
-    b.hidden = false; b.innerHTML = `<b>Continuar partida</b><small>${r.label || ''}</small>`;
+    b.hidden = false; b.innerHTML = `<b>${t('Continuar partida')}</b><small>${r.label ? savedLabel(r.label) : ''}</small>`;
   } else if (r && r.type==='online' && Net.validCode(r.code)){
-    b.hidden = false; b.innerHTML = `<b>Volver a la partida en línea</b><small>Código ${r.code.toUpperCase()}</small>`;
+    b.hidden = false; b.innerHTML = `<b>${t('Volver a la partida en línea')}</b><small>${t('Código {c}', { c:r.code.toUpperCase() })}</small>`;
   } else b.hidden = true;
 }
 document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => {
@@ -118,14 +120,14 @@ $('btnResume').onclick = async () => {
 
 // ============================== Preparativos ==============================
 function openSetup(){
-  $('setupTitle').textContent = draft.mode==='ai' ? 'Contra la máquina' : draft.mode==='pvp' ? 'Dos jugadores' : 'Crear partida';
+  $('setupTitle').textContent = draft.mode==='ai' ? t('Contra la máquina') : draft.mode==='pvp' ? t('Dos jugadores') : t('Crear partida');
   $('blkSide').hidden = draft.mode==='pvp';
   $('blkLevel').hidden = draft.mode!=='ai';
-  $('btnStart').textContent = draft.mode==='online' ? 'Crear y obtener código' : 'Comenzar';
+  $('btnStart').textContent = draft.mode==='online' ? t('Crear y obtener código') : t('Comenzar');
   renderSetup(); go('setup');
 }
 function renderDuels(){
-  $('duels').innerHTML = DUELS.map(([a,b],i) => `<button type="button" class="chip ${draft.w===a&&draft.b===b?'on':''}" data-i="${i}">${FACTIONS[a].name} <i>vs</i> ${FACTIONS[b].name}</button>`).join('');
+  $('duels').innerHTML = DUELS.map(([a,b],i) => `<button type="button" class="chip ${draft.w===a&&draft.b===b?'on':''}" data-i="${i}">${fName(a)} <i>${t('vs')}</i> ${fName(b)}</button>`).join('');
   $('duels').querySelectorAll('.chip').forEach(c => c.onclick = () => { const [a,b] = DUELS[+c.dataset.i]; draft.w = a; draft.b = b; store.set('ajh-draft', draft); renderSetup(); });
 }
 function renderSetup(){
@@ -133,7 +135,7 @@ function renderSetup(){
   for (const [col,id] of [['w','rowW'],['b','rowB']]){
     $(id).innerHTML = Object.entries(FACTIONS).map(([k,f]) =>
       `<button type="button" class="army ${draft[col]===k?'on':''} ${draft[other(col)]===k?'taken':''}" data-k="${k}" aria-pressed="${draft[col]===k}">`
-      + `${pieceSVG('K',k,{noBadge:true})}<b>${f.name}</b><small>${f.era}</small></button>`).join('');
+      + `${pieceSVG('K',k,{noBadge:true})}<b>${fName(k)}</b><small>${fEra(k)}</small></button>`).join('');
     $(id).querySelectorAll('.army').forEach(btn => btn.onclick = () => {
       const k = btn.dataset.k; if (draft[col]===k) return;
       if (draft[other(col)]===k) draft[other(col)] = draft[col];
@@ -146,10 +148,10 @@ function renderSetup(){
     b.classList.toggle('on', b.dataset.v === (draft.humanPick || draft.human));
     b.onclick = () => { draft.humanPick = b.dataset.v; if (b.dataset.v!=='r') draft.human = b.dataset.v; store.set('ajh-draft', draft); renderSetup(); };
   });
-  $('levels').innerHTML = [1,2,3,4,5,6,7].map(n => `<button type="button" data-n="${n}" class="${draft.lvl===n?'on':''}" aria-label="Nivel ${n}">${n}</button>`).join('');
+  $('levels').innerHTML = [1,2,3,4,5,6,7].map(n => `<button type="button" data-n="${n}" class="${draft.lvl===n?'on':''}" aria-label="${t('Nivel {n}', { n })}">${n}</button>`).join('');
   $('levels').querySelectorAll('button').forEach(b => b.onclick = () => { draft.lvl = +b.dataset.n; store.set('ajh-draft', draft); renderSetup(); });
-  $('lvlName').textContent = `${draft.lvl} · ${LEVELS[draft.lvl].name}`;
-  $('lvlHint').textContent = LEVEL_INFO[draft.lvl];
+  $('lvlName').textContent = `${draft.lvl} · ${lvlName(draft.lvl)}`;
+  $('lvlHint').textContent = levelInfo(draft.lvl);
 }
 $('btnStart').onclick = () => {
   const pickSide = draft.humanPick==='r' ? (Math.random()<.5 ? 'w' : 'b') : draft.human;
@@ -166,7 +168,7 @@ const findMove = (st, u) => legalMoves(st).find(m => uci(m)===u) || null;
 
 function resetBoard(){
   aiToken++; busy = false; stopAI();
-  game = initState(); history = []; positions = [posKey(game)]; log = []; sel = null; hints = []; over = null; anim = null; overShown = false;
+  game = initState(); history = []; positions = [posKey(game)]; log = []; sel = null; hints = []; infoSq = null; over = null; anim = null; overShown = false;
 }
 function describe(st, m, next){
   const p = st.b[m.f];
@@ -181,23 +183,23 @@ function pushMove(m){
   const next = applyMove(game, m);
   log.push({ m, txt: describe(game, m, next), cap: next.captured || null });
   history.push(game); game = next; positions.push(posKey(game));
-  sel = null; hints = [];
+  sel = null; hints = []; infoSq = null;
 }
-const facName = col => FACTIONS[cfg[col]].name;
-const pieceName = p => FACTIONS[cfg[p[0]]].names[p[1]];
+const facName = col => fName(cfg[col]);
+const pieceName = p => fPiece(cfg[p[0]], p[1]);
 
 function checkEnd(){
   over = null;
   if (net && net.res){
     const loser = net.res.slice(-1);
-    over = `<b>${facName(loser)}</b> se rinde. Victoria de <b>${facName(other(loser))}</b>.`; return;
+    over = t('{a} se rinde. Victoria de {b}.', { a:`<b>${facName(loser)}</b>`, b:`<b>${facName(other(loser))}</b>` }); return;
   }
   const moves = legalMoves(game);
   const reps = positions.filter(k => k===positions[positions.length-1]).length;
-  if (!moves.length) over = inCheck(game) ? `¡Jaque mate! Victoria de <b>${facName(other(game.turn))}</b>.` : 'Tablas por ahogado.';
-  else if (game.half >= 100) over = 'Tablas por la regla de los 50 movimientos.';
-  else if (reps >= 3) over = 'Tablas por triple repetición.';
-  else if (insufficient(game.b)) over = 'Tablas por material insuficiente.';
+  if (!moves.length) over = inCheck(game) ? t('¡Jaque mate! Victoria de {a}.', { a:`<b>${facName(other(game.turn))}</b>` }) : t('Tablas por ahogado.');
+  else if (game.half >= 100) over = t('Tablas por la regla de los 50 movimientos.');
+  else if (reps >= 3) over = t('Tablas por triple repetición.');
+  else if (insufficient(game.b)) over = t('Tablas por material insuficiente.');
 }
 
 // ============================== Máquina (en un Worker) ==============================
@@ -240,7 +242,7 @@ function startLocal(c){
   cfg = c; net = null;
   resetBoard();
   flipped = c.mode==='ai' && c.human==='b';
-  store.set('ajh-resume', { type:'local', label:`${c.mode==='ai' ? 'Contra la máquina · ' + LEVELS[c.lvl].name : 'Dos jugadores'}` });
+  store.set('ajh-resume', { type:'local', label:{ mode:c.mode, lvl:c.lvl } });
   saveLocal(); enterGame(); maybeAI();
 }
 function saveLocal(){
@@ -256,9 +258,10 @@ function resumeLocal(){
   checkEnd(); flipped = !!s.flipped; enterGame(); maybeAI();
 }
 function enterGame(){
-  $('gameTitle').textContent = cfg.mode==='ai' ? 'Contra la máquina' : cfg.mode==='pvp' ? 'Dos jugadores' : 'En línea';
+  $('gameTitle').textContent = cfg.mode==='ai' ? t('Contra la máquina') : cfg.mode==='pvp' ? t('Dos jugadores') : t('En línea');
   $('conn').hidden = cfg.mode!=='online';
   go('game'); render();
+  if (!store.get('ajh-tip', false)){ store.set('ajh-tip', true); setTimeout(() => toast(t('Toca una pieza para ver su nombre, su papel en el ajedrez y cómo se mueve.')), 700); }
 }
 function leaveGame(){
   aiToken++; busy = false; stopAI();
@@ -270,12 +273,12 @@ function undo(){
   let n = 1;
   if (cfg.mode==='ai' && history.length>=2 && game.turn===cfg.human) n = 2;
   for (let i=0;i<n && history.length;i++){ game = history.pop(); log.pop(); positions.pop(); }
-  over = null; sel = null; hints = []; anim = null; overShown = false;
+  over = null; sel = null; hints = []; infoSq = null; anim = null; overShown = false;
   saveLocal(); render(); maybeAI();
 }
 async function newLocal(){
   if (!cfg || cfg.mode==='online') return;
-  if (log.length && !over && !(await confirmBox('¿Nueva partida?', 'Se perderá la partida actual.', 'Empezar de nuevo'))) return;
+  if (log.length && !over && !(await confirmBox(t('¿Nueva partida?'), t('Se perderá la partida actual.'), t('Empezar de nuevo')))) return;
   startLocal(Object.assign({}, cfg));
 }
 
@@ -286,17 +289,28 @@ function humanTurn(){
   if (cfg.mode==='ai') return game.turn===cfg.human;
   return !!(net && net.side && net.side!=='s' && net.side===game.turn && net.guestId && !net.res);
 }
+let infoSq = null;   // pieza cuya ficha (nombre, papel y movimiento) se muestra bajo el tablero
 function onSquare(s){
-  if (!humanTurn()) return;
-  const p = game.b[s], h = hints.filter(m => m.t===s);
-  if (sel!==null && h.length){ if (h[0].promo) return askPromo(h); return playerMove(h[0]); }
-  if (p && p[0]===game.turn){ sel = s; hints = legalMoves(game).filter(m => m.f===s); }
-  else { sel = null; hints = []; }
+  const p = game.b[s], can = humanTurn(), h = hints.filter(m => m.t===s);
+  if (can && sel!==null && h.length){ if (h[0].promo) return askPromo(h); return playerMove(h[0]); }
+  if (p){
+    infoSq = s;
+    if (can && p[0]===game.turn){ sel = s; hints = legalMoves(game).filter(m => m.f===s); }
+    else { sel = null; hints = []; }
+  } else { infoSq = null; sel = null; hints = []; }
   render();
+}
+function renderInfo(){
+  const el = $('pinfo'); if (!el) return;
+  const p = infoSq!==null && !over ? game.b[infoSq] : null;
+  if (!p){ el.hidden = true; return; }
+  el.hidden = false;
+  el.innerHTML = `<span class="pi-fig">${pieceSVG(p[1], cfg[p[0]], { noBadge:true })}</span>`
+    + `<span class="pi-txt"><b>${pieceName(p)}</b> <em>${roleName(p[1])}</em><small>${roleHelp(p[1])}</small></span>`;
 }
 async function askPromo(opts){
   const col = game.turn;
-  const v = await dialog({ title:'Ascenso del peón', opts:[...'QRBN'].map(q => ({ value:q, html: pieceSVG(q, cfg[col], {noBadge:true}) + `<span>${FACTIONS[cfg[col]].names[q]}</span>` })), buttons:[] });
+  const v = await dialog({ title:t('Ascenso del peón'), opts:[...'QRBN'].map(q => ({ value:q, html: pieceSVG(q, cfg[col], {noBadge:true}) + `<span>${fPiece(cfg[col], q)}</span><small>${roleName(q)}</small>` })), buttons:[] });
   const m = v && opts.find(x => x.promo===v);
   if (m) playerMove(m);
 }
@@ -326,12 +340,12 @@ let rafId = 0;
 const scheduleRender = () => { if (!rafId) rafId = requestAnimationFrame(() => { rafId = 0; render(); }); };
 
 function roleOf(col){
-  if (cfg.mode==='ai') return col===cfg.human ? 'Tú' : `Máquina · ${LEVELS[cfg.lvl].name}`;
-  if (cfg.mode==='pvp') return col==='w' ? 'Jugador 1' : 'Jugador 2';
-  if (!net || !net.side) return col==='w' ? 'Bando 1' : 'Bando 2';
-  if (net.side==='s') return col==='w' ? 'Bando 1' : 'Bando 2';
-  if (col===net.side) return 'Tú';
-  return net.guestId || net.isHost===false ? 'Tu amigo' : 'Esperando a tu amigo…';
+  if (cfg.mode==='ai') return col===cfg.human ? t('Tú') : t('Máquina · {l}', { l:lvlName(cfg.lvl) });
+  if (cfg.mode==='pvp') return col==='w' ? t('Jugador 1') : t('Jugador 2');
+  if (!net || !net.side) return col==='w' ? t('Bando 1') : t('Bando 2');
+  if (net.side==='s') return col==='w' ? t('Bando 1') : t('Bando 2');
+  if (col===net.side) return t('Tú');
+  return net.guestId || net.isHost===false ? t('Tu amigo') : t('Esperando a tu amigo…');
 }
 function render(){
   if (!cfg) return;
@@ -344,16 +358,17 @@ function render(){
     d.className = 'sq ' + ((r+c)%2 ? 'd' : 'l'); d.dataset.s = s;
     if (last && (s===last.f || s===last.t)) d.classList.add('last');
     if (s===sel) d.classList.add('sel');
+    else if (s===infoSq) d.classList.add('info');
     if (s===chk) d.classList.add('check');
     const p = game.b[s];
-    if (p){ d.innerHTML = pieceSVG(p[1], cfg[p[0]]); d.title = `${pieceName(p)} (${facName(p[0])})`; }
+    if (p){ d.innerHTML = pieceSVG(p[1], cfg[p[0]]); d.title = `${pieceName(p)} · ${roleName(p[1])} (${facName(p[0])})`; }
     if (settings.hints){
       const h = hints.find(m => m.t===s);
       if (h){ const x = document.createElement('span'); x.className = 'hintdot' + (p||h.ep ? ' cap' : ''); d.appendChild(x); }
     }
     if ((flipped ? r===0 : r===7)){ const x = document.createElement('span'); x.className = 'coord f'; x.textContent = FILES[c]; d.appendChild(x); }
     if ((flipped ? c===7 : c===0)){ const x = document.createElement('span'); x.className = 'coord r'; x.textContent = 8-r; d.appendChild(x); }
-    d.setAttribute('role','gridcell'); d.setAttribute('aria-label', sqName(s) + (p ? ' ' + pieceName(p) : ''));
+    d.setAttribute('role','gridcell'); d.setAttribute('aria-label', sqName(s) + (p ? ' ' + pieceName(p) + ', ' + roleName(p[1]) : ''));
     board.appendChild(d);
   }
   if (anim){
@@ -371,7 +386,7 @@ function render(){
   for (const [el, col] of [[$('pTop'), top], [$('pBot'), bot]]){
     const f = FACTIONS[cfg[col]];
     el.querySelector('.dot').style.background = f.fill;
-    el.querySelector('.lbl').textContent = f.name;
+    el.querySelector('.lbl').textContent = fName(cfg[col]);
     el.querySelector('.role').textContent = roleOf(col);
     el.classList.toggle('active', !over && game.turn===col);
     const caps = log.filter(e => e.cap && e.cap[0]!==col).map(e => e.cap);
@@ -380,34 +395,35 @@ function render(){
   }
   let st = '', think = false;
   if (over) st = over;
-  else if (cfg.mode==='online' && (!net || !net.hostId)) st = net && net.notFound ? 'No encontré esa partida.' : 'Buscando la partida…';
-  else if (busy){ st = `<b>${facName(game.turn)}</b> está pensando`; think = true; }
-  else if (cfg.mode==='online' && net.side && net.side!=='s' && !net.guestId) st = 'Esperando a que tu amigo se una…';
+  else if (cfg.mode==='online' && (!net || !net.hostId)) st = net && net.notFound ? t('No encontré esa partida.') : t('Buscando la partida…');
+  else if (busy){ st = t('{a} está pensando', { a:`<b>${facName(game.turn)}</b>` }); think = true; }
+  else if (cfg.mode==='online' && net.side && net.side!=='s' && !net.guestId) st = t('Esperando a que tu amigo se una…');
   else {
-    st = `Turno de <b>${facName(game.turn)}</b>` + (chk>=0 ? ' — ¡<b>jaque</b>!' : '');
-    if (cfg.mode==='online' && net.side===game.turn) st += ' (tú)';
-    if (cfg.mode==='online' && net.side==='s') st += ' · espectador';
+    st = t('Turno de {a}', { a:`<b>${facName(game.turn)}</b>` }) + (chk>=0 ? t(' — ¡{j}!', { j:`<b>${t('jaque')}</b>` }) : '');
+    if (cfg.mode==='online' && net.side===game.turn) st += t(' (tú)');
+    if (cfg.mode==='online' && net.side==='s') st += t(' · espectador');
   }
-  if (sel!==null && game.b[sel] && !over) st += ` · ${pieceName(game.b[sel])}`;
   $('status').innerHTML = st; $('status').classList.toggle('think', think);
-  $('moves').innerHTML = log.length ? movesHTML() : '<div class="empty">Aún no hay jugadas.</div>';
+  $('moves').innerHTML = log.length ? movesHTML() : `<div class="empty">${t('Aún no hay jugadas.')}</div>`;
+  renderInfo();
   const on = cfg.mode==='online';
   $('tUndo').disabled = on; $('tNew').disabled = on;
   $('mResign').hidden = !(on && net && net.side && net.side!=='s' && net.guestId && !over);
   $('invite').hidden = !(on && net && net.isHost && !net.guestId);
-  if (on && net){ $('codeShow').textContent = net.code.toUpperCase(); const cn = $('conn'); cn.classList.toggle('ok', !!net.connected); cn.title = net.connected ? 'Conectado' : 'Reconectando…'; }
+  if (on && net){ $('codeShow').textContent = net.code.toUpperCase(); const cn = $('conn'); cn.classList.toggle('ok', !!net.connected); cn.title = net.connected ? t('Conectado') : t('Reconectando…'); }
   if (over && !overShown){ overShown = true; saveLocal(); setTimeout(showOver, 450); }
 }
 // ---- Notación algebraica estándar (SAN) y tabla de jugadas ----
-function sanRows(){
+const locSan = (san, lang) => san.replace(/[KQRBN]/g, c => SAN_LETTERS[lang][c]);
+function sanRows(loc){
   let st = initState(); const rows = [];
   for (const e of log){
-    const m = e.m, p = st.b[m.f], t = p[1], next = applyMove(st, m);
+    const m = e.m, p = st.b[m.f], pt = p[1], next = applyMove(st, m);
     let san;
     if (m.castle) san = m.t > m.f ? 'O-O' : 'O-O-O';
     else {
       const cap = !!next.captured;
-      if (t==='P') san = (cap ? FILES[m.f%8] + 'x' : '') + sqName(m.t) + (m.promo ? '=' + m.promo : '');
+      if (pt==='P') san = (cap ? FILES[m.f%8] + 'x' : '') + sqName(m.t) + (m.promo ? '=' + m.promo : '');
       else {
         const rivals = legalMoves(st).filter(o => o.t===m.t && o.f!==m.f && st.b[o.f]===p);
         let dis = '';
@@ -415,14 +431,14 @@ function sanRows(){
           const sameFile = rivals.some(o => o.f%8===m.f%8), sameRank = rivals.some(o => (o.f>>3)===(m.f>>3));
           dis = !sameFile ? FILES[m.f%8] : !sameRank ? String(8-(m.f>>3)) : sqName(m.f);
         }
-        san = t + dis + (cap ? 'x' : '') + sqName(m.t);
+        san = pt + dis + (cap ? 'x' : '') + sqName(m.t);
       }
     }
     const chk = inCheck(next); const mate = chk && !legalMoves(next).length;
     if (chk) san += mate ? '#' : '+';
-    rows.push({ n: Math.floor(rows.length/2)+1, col: p[0], side: p[0]==='w' ? 'Blancas' : 'Negras', army: FACTIONS[cfg[p[0]]].name,
-      piece: FACTIONS[cfg[p[0]]].names[t], san, from: sqName(m.f), to: sqName(m.t),
-      cap: next.captured ? FACTIONS[cfg[next.captured[0]]].names[next.captured[1]] : '', chk: mate ? 'Mate' : chk ? 'Jaque' : '' });
+    rows.push({ n: Math.floor(rows.length/2)+1, col: p[0], side: p[0]==='w' ? t('Blancas') : t('Negras'), army: fName(cfg[p[0]]),
+      piece: fPiece(cfg[p[0]], pt), san: loc ? locSan(san, LANG) : san, from: sqName(m.f), to: sqName(m.t),
+      cap: next.captured ? fPiece(cfg[next.captured[0]], next.captured[1]) : '', chk: mate ? t('Mate') : chk ? t('Jaque') : '' });
     st = next;
   }
   return rows;
@@ -435,50 +451,50 @@ function gameResult(){
 }
 const esc = t => String(t).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 function movesHTML(){
-  const rows = sanRows();
+  const rows = sanRows(true);
   const caps = c => rows.filter(r => r.col===c && r.cap).length;
-  let h = `<div class="msum"><span><b>${rows.length}</b> jugadas</span><span>Capturas: ${facName('w')} <b>${caps('w')}</b> · ${facName('b')} <b>${caps('b')}</b></span><span>Resultado: <b>${gameResult()}</b></span></div>`;
-  h += '<div class="mt"><table><thead><tr><th>N.º</th><th>Bando</th><th>Pieza</th><th>Jugada</th><th>Desde→Hasta</th><th>Captura</th><th>Estado</th></tr></thead><tbody>';
+  let h = `<div class="msum"><span>${t('{n} jugadas', { n:`<b>${rows.length}</b>` })}</span><span>${t('Capturas: {a} {x} · {b} {y}', { a:facName('w'), x:`<b>${caps('w')}</b>`, b:facName('b'), y:`<b>${caps('b')}</b>` })}</span><span>${t('Resultado: {r}', { r:`<b>${gameResult()}</b>` })}</span></div>`;
+  h += `<div class="mt"><table><thead><tr><th>${t('N.º')}</th><th>${t('Bando')}</th><th>${t('Pieza')}</th><th>${t('Jugada')}</th><th>${t('Desde→Hasta')}</th><th>${t('Captura')}</th><th>${t('Estado')}</th></tr></thead><tbody>`;
   rows.forEach((r,i) => { h += `<tr class="${r.col}"><td>${i%2===0 ? r.n : ''}</td><td>${esc(r.army)}</td><td>${esc(r.piece)}</td><td><b>${esc(r.san)}</b></td><td>${r.from}→${r.to}</td><td>${esc(r.cap)}</td><td>${r.chk}</td></tr>`; });
   return h + '</tbody></table></div>';
 }
 function exportName(ext){ return 'ajedrez-historico-' + new Date().toISOString().slice(0,10) + '.' + ext; }
 function buildCSV(){
-  const rows = sanRows(), q = v => '"' + String(v).replace(/"/g,'""') + '"';
-  const head = ['N.º jugada','Bando','Ejército','Pieza','Jugada (SAN)','Desde','Hasta','Captura','Estado'];
+  const rows = sanRows(true), q = v => '"' + String(v).replace(/"/g,'""') + '"';
+  const head = [t('N.º jugada'),t('Bando'),t('Ejército'),t('Pieza'),t('Jugada (SAN)'),t('Desde'),t('Hasta'),t('Captura'),t('Estado')];
   return '\ufeff' + [head, ...rows.map((r,i) => [i+1, r.side, r.army, r.piece, r.san, r.from, r.to, r.cap, r.chk])].map(r => r.map(q).join(';')).join('\r\n') + '\r\n';
 }
 function buildPGN(){
-  const rows = sanRows(), res = gameResult(), d = new Date().toISOString().slice(0,10).replace(/-/g,'.');
-  let t = `[Event "Ajedrez Histórico"]\n[Date "${d}"]\n[White "${facName('w')}"]\n[Black "${facName('b')}"]\n[Result "${res}"]\n\n`, line = '';
+  const rows = sanRows(false), res = gameResult(), d = new Date().toISOString().slice(0,10).replace(/-/g,'.');
+  let hd = `[Event "Ajedrez Histórico"]\n[Date "${d}"]\n[White "${facName('w')}"]\n[Black "${facName('b')}"]\n[Result "${res}"]\n\n`, line = '';
   rows.forEach((r,i) => { line += (i%2===0 ? (r.n + '. ') : '') + r.san + ' '; });
   line += res;
   const out = []; let cur = '';
   for (const w of line.split(' ')){ if ((cur + ' ' + w).trim().length > 78){ out.push(cur); cur = w; } else cur = (cur + ' ' + w).trim(); }
   out.push(cur);
-  return t + out.join('\n') + '\n';
+  return hd + out.join('\n') + '\n';
 }
 function exportFile(kind){
-  if (!log.length) return toast('Aún no hay jugadas que exportar.');
+  if (!log.length) return toast(t('Aún no hay jugadas que exportar.'));
   const csv = kind==='csv', name = exportName(csv ? 'csv' : 'pgn'), data = csv ? buildCSV() : buildPGN(), mime = csv ? 'text/csv' : 'application/x-chess-pgn';
-  if (native && native.shareFile){ native.shareFile(name, mime, data); return; }
+  if (native && native.shareFile){ native.shareFile(name, mime, data, t('Exportar jugadas')); return; }
   const url = URL.createObjectURL(new Blob([data], { type: mime + ';charset=utf-8' }));
   const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
-  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500); toast('Archivo ' + name + ' generado');
+  setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 1500); toast(t('Archivo {n} generado', { n:name }));
 }
 $('xCsv').onclick = () => exportFile('csv');
 $('xPgn').onclick = () => exportFile('pgn');
 $('xCopy').onclick = () => {
-  if (!log.length) return toast('Aún no hay jugadas.');
-  const t = buildPGN();
-  if (native && native.copy){ native.copy(t); toast('Jugadas copiadas'); return; }
-  try { navigator.clipboard.writeText(t).then(() => toast('Jugadas copiadas'), () => toast('No se pudo copiar')); } catch(e){ toast('No se pudo copiar'); }
+  if (!log.length) return toast(t('Aún no hay jugadas.'));
+  const txt = buildPGN();
+  if (native && native.copy){ native.copy(txt); toast(t('Jugadas copiadas')); return; }
+  try { navigator.clipboard.writeText(txt).then(() => toast(t('Jugadas copiadas')), () => toast(t('No se pudo copiar'))); } catch(e){ toast(t('No se pudo copiar')); }
 };
 async function showOver(){
   if (!over) return;
   const text = over.replace(/<[^>]+>/g, '');
   const on = cfg.mode==='online';
-  const v = await dialog({ title:'Fin de la partida', text, buttons:[{label:'Ver tablero', value:'see'}, {label: on ? 'Salir' : 'Nueva partida', value:'go', primary:true}] });
+  const v = await dialog({ title:t('Fin de la partida'), text, buttons:[{label:t('Ver tablero'), value:'see'}, {label: on ? t('Salir') : t('Nueva partida'), value:'go', primary:true}] });
   if (v==='go'){ if (on) leaveGame(); else startLocal(Object.assign({}, cfg)); }
 }
 
@@ -492,32 +508,44 @@ $('mArmies').onclick = () => { fillArmiesSheet(); openSheet('sh-armies'); };
 $('mSettings').onclick = () => { fillSettings(); openSheet('sh-settings'); };
 $('mResign').onclick = async () => {
   closeSheet();
-  if (await confirmBox('¿Rendirte?', 'Tu amigo ganará la partida.', 'Rendirme', true) && net && net.side && net.side!=='s' && !over){
+  if (await confirmBox(t('¿Rendirte?'), t('Tu amigo ganará la partida.'), t('Rendirme'), true) && net && net.side && net.side!=='s' && !over){
     net.res = 'resign-' + net.side; Net.send(net.code, { k:'res', id:net.id }); checkEnd(); render();
   }
 };
 
 // ============================== Ajustes y ejércitos ==============================
 function fillSettings(){
-  $('themes').innerHTML = Object.entries(THEMES).map(([k,t]) =>
-    `<button type="button" data-k="${k}" class="${k===settings.board?'on':''}"><span class="sw"><i style="background:${t.l}"></i><i style="background:${t.d}"></i><i style="background:${t.d}"></i><i style="background:${t.l}"></i></span>${t.name}</button>`).join('');
+  $('themes').innerHTML = Object.entries(THEMES).map(([k,th]) =>
+    `<button type="button" data-k="${k}" class="${k===settings.board?'on':''}"><span class="sw"><i style="background:${th.l}"></i><i style="background:${th.d}"></i><i style="background:${th.d}"></i><i style="background:${th.l}"></i></span>${t(th.name)}</button>`).join('');
   $('themes').querySelectorAll('button').forEach(b => b.onclick = () => { settings.board = b.dataset.k; applySettings(); fillSettings(); });
-  for (const [id,key] of [['optGlyph','glyph'],['optHints','hints'],['optCoords','coords']]){
+  for (const [id,key] of [['optGlyph','glyph'],['optClassic','classic'],['optHints','hints'],['optCoords','coords']]){
     $(id).checked = !!settings[key];
-    $(id).onchange = () => { settings[key] = $(id).checked; applySettings(); if (cfg && cur==='game') render(); };
+    $(id).onchange = () => { settings[key] = $(id).checked; applySettings(); if (cfg && cur==='game') render(); if (cur==='home') renderHome(); };
   }
+  $('langs').innerHTML = Object.entries(LANGS).map(([k,n]) => `<button type="button" data-k="${k}" class="${k===LANG?'on':''}">${n}</button>`).join('');
+  $('langs').querySelectorAll('button').forEach(b => b.onclick = () => { setLang(b.dataset.k); applyLang(); });
 }
 function fillArmiesSheet(){
-  $('armiesList').innerHTML = Object.entries(FACTIONS).map(([k,f]) =>
-    `<div class="army-info"><h4>${f.name} · <span style="color:var(--muted);font-size:13px;font-weight:400">${f.era}</span></h4><p>${f.blurb}</p>`
-    + `<div class="legend">${'KQRBNP'.split('').map(t => `<div>${pieceSVG(t,k,{noBadge:true})}<span>${f.names[t]}</span></div>`).join('')}</div></div>`).join('');
+  $('armiesList').innerHTML = Object.entries(FACTIONS).map(([k]) =>
+    `<div class="army-info"><h4>${fName(k)} · <span style="color:var(--muted);font-size:13px;font-weight:400">${fEra(k)}</span></h4><p>${fBlurb(k)}</p>`
+    + `<div class="legend">${'KQRBNP'.split('').map(ty => `<div>${pieceSVG(ty,k,{noBadge:true})}<span>${fPiece(k,ty)}<small>${roleName(ty)}</small></span></div>`).join('')}</div></div>`).join('');
 }
+
+function fillGuide(){
+  const sides = cfg ? ['w','b'] : [];
+  $('guideList').innerHTML = sides.map(col => {
+    const k = cfg[col];
+    return `<div class="army-info"><h4>${fName(k)}</h4>` + 'KQRBNP'.split('').map(ty =>
+      `<div class="gd"><span class="gd-fig">${pieceSVG(ty,k,{noBadge:true})}</span><span class="gd-txt"><b>${fPiece(k,ty)}</b> <em>${roleName(ty)}</em><small>${roleHelp(ty)}</small></span></div>`).join('') + '</div>';
+  }).join('');
+}
+$('tGuide').onclick = () => { fillGuide(); openSheet('sh-guide'); };
 
 // ============================== En línea ==============================
 $('btnCreate').onclick = () => { draft.mode = 'online'; openSetup(); };
 $('btnJoin').onclick = () => {
   const code = ($('codeIn').value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  if (!Net.validCode(code)){ $('joinErr').textContent = 'Ese código no es válido (4 a 8 letras o números).'; $('joinErr').hidden = false; return; }
+  if (!Net.validCode(code)){ $('joinErr').textContent = t('Ese código no es válido (4 a 8 letras o números).'); $('joinErr').hidden = false; return; }
   $('joinErr').hidden = true; joinOnline(code);
 };
 $('codeIn').onkeydown = e => { if (e.key==='Enter') $('btnJoin').click(); };
@@ -549,7 +577,7 @@ async function createOnline(side){
   store.set('ajh-resume', { type:'online', code:net.code });
   enterGame(); connect();
   const ok = await Net.send(net.code, { k:'host', id:net.id, side, fw:draft.w, fb:draft.b });
-  if (!ok) toast('Sin conexión: no se pudo crear la partida. Revisa tu internet.');
+  if (!ok) toast(t('Sin conexión: no se pudo crear la partida. Revisa tu internet.'));
 }
 function joinOnline(code){
   net = newNet(code, false);
@@ -603,23 +631,32 @@ function queueSeat(){
 function sendMove(m){
   const msg = { k:'mv', id:net.id, n:log.length-1, u:uci(m) };
   net.unsent[msg.n] = msg;
-  Net.send(net.code, msg).then(ok => { if (!ok && net) toast('Sin conexión: la jugada se enviará al reconectar.'); });
+  Net.send(net.code, msg).then(ok => { if (!ok && net) toast(t('Sin conexión: la jugada se enviará al reconectar.')); });
 }
 $('btnShare').onclick = () => {
   const code = net ? net.code.toUpperCase() : '';
-  const text = `Juguemos Ajedrez Histórico. En la app elige «En línea con un amigo» → «Unirse» y escribe el código ${code}.`;
-  if (native && native.share) return native.share(text);
+  const text = t('Juguemos Ajedrez Histórico. En la app elige «En línea con un amigo» → «Unirse» y escribe el código {c}.', { c:code });
+  if (native && native.share) return native.share(text, t('Invitar a un amigo'));
   if (navigator.share) return navigator.share({ text }).catch(() => {});
   copyText(text);
 };
-function copyText(t){
-  if (native && native.copy){ native.copy(t); toast('Invitación copiada'); return; }
-  try { navigator.clipboard.writeText(t).then(() => toast('Invitación copiada'), () => toast('Copia el código a mano: ' + (net ? net.code.toUpperCase() : ''))); }
-  catch(e){ toast('Copia el código a mano.'); }
+function copyText(txt){
+  if (native && native.copy){ native.copy(txt); toast(t('Invitación copiada')); return; }
+  try { navigator.clipboard.writeText(txt).then(() => toast(t('Invitación copiada')), () => toast(t('Copia el código a mano: {c}', { c: net ? net.code.toUpperCase() : '' }))); }
+  catch(e){ toast(t('Copia el código a mano.')); }
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden && net) Net.reconnect(); });
 
-// ============================== Arranque ==============================
+// ============================== Idioma y arranque ==============================
+function applyLang(){
+  translateDOM(document.body);
+  renderHome(); fillSettings();
+  if (!$('sh-armies').hidden) fillArmiesSheet();
+  if (!$('sh-guide').hidden) fillGuide();
+  if (cur==='setup') openSetup();
+  if (cfg && cur==='game'){ $('gameTitle').textContent = cfg.mode==='ai' ? t('Contra la máquina') : cfg.mode==='pvp' ? t('Dos jugadores') : t('En línea'); render(); }
+}
+translateDOM(document.body);
 applySettings();
 renderHome();
 go('home');

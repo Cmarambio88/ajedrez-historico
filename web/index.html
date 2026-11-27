@@ -107,10 +107,12 @@
       <div id="boardWrap"><div id="board" role="grid" aria-label="Tablero de ajedrez"></div></div>
       <div class="strip" id="pBot"><span class="dot"></span><span class="who"><b class="lbl"></b><small class="role"></small></span><span class="caps"></span></div>
       <div id="status" aria-live="polite"></div>
+      <div id="pinfo" hidden></div>
     </div>
     <nav class="tools">
       <button id="tUndo"><i>↶</i><span>Deshacer</span></button>
       <button id="tFlip"><i>⇅</i><span>Girar</span></button>
+      <button id="tGuide"><i>?</i><span>Guía</span></button>
       <button id="tLog"><i>≡</i><span>Bitácora</span></button>
       <button id="tNew"><i>✦</i><span>Nueva</span></button>
     </nav>
@@ -126,8 +128,12 @@
   <h3>Tablero</h3>
   <div class="themes" id="themes"></div>
   <label class="switch"><input type="checkbox" id="optGlyph"><span>Símbolo clásico en cada pieza</span></label>
+  <label class="switch"><input type="checkbox" id="optClassic"><span>Formas de piezas clásicas</span></label>
+  <p class="hint" style="margin:-4px 0 8px 2px">Usa las formas del ajedrez de siempre, con los colores de cada ejército.</p>
   <label class="switch"><input type="checkbox" id="optHints"><span>Mostrar jugadas posibles</span></label>
   <label class="switch"><input type="checkbox" id="optCoords"><span>Mostrar coordenadas</span></label>
+  <h3>Idioma</h3>
+  <div class="themes" id="langs"></div>
   <button class="btn" data-close>Listo</button>
 </aside>
 
@@ -135,6 +141,13 @@
   <div class="grab"></div>
   <h2>Los ejércitos</h2>
   <div class="sheet-scroll" id="armiesList"></div>
+  <button class="btn" data-close>Cerrar</button>
+</aside>
+
+<aside class="sheet tall" id="sh-guide" hidden>
+  <div class="grab"></div>
+  <h2>Guía de piezas</h2>
+  <div class="sheet-scroll" id="guideList"></div>
   <button class="btn" data-close>Cerrar</button>
 </aside>
 
@@ -164,6 +177,7 @@
   </div>
 </div>
 
+<script src="js/i18n.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/pieces.js"></script>
 <script src="js/pieces2.js"></script>

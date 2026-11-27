@@ -128,7 +128,7 @@ body.nocoords .coord{display:none}
 #status b{color:var(--gold2);font-weight:600}
 #status.think::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:dots 1.2s steps(4,end) infinite}
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%,100%{content:"..."}}
-.tools{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:6px 10px 10px;border-top:1px solid var(--line);background:#100d0aaa}
+.tools{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 10px 10px;border-top:1px solid var(--line);background:#100d0aaa}
 .tools button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border-radius:12px;color:var(--muted);font-size:11px}
 .tools button i{font-style:normal;font-size:22px;line-height:1.1;color:var(--ink)}
 .tools button:active{background:var(--panel2)}
@@ -188,3 +188,15 @@ body.nocoords .coord{display:none}
 .chip{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:7px 11px;font-size:13px}
 .chip i{color:var(--muted);font-style:normal;font-size:11px}
 .chip.on{border-color:var(--gold);color:var(--gold)}
+
+#pinfo{display:flex;gap:10px;align-items:center;margin:6px 12px 0;padding:8px 10px;border:1px solid var(--line);background:var(--panel);border-radius:12px;font-size:13px;line-height:1.3}
+#pinfo[hidden]{display:none}
+.pi-fig{flex:0 0 44px;height:50px}.pi-fig svg{width:100%;height:100%}
+.pi-txt b{font-size:14px}.pi-txt em{font-style:normal;color:var(--gold);font-weight:600;margin-left:4px;font-size:12px;border:1px solid var(--gold);border-radius:999px;padding:1px 7px}
+.pi-txt small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.sq.info::after{content:"";position:absolute;inset:0;box-shadow:inset 0 0 0 3px rgba(201,162,74,.75);pointer-events:none}
+.gd{display:flex;gap:10px;align-items:center;padding:6px 0;border-bottom:1px dashed var(--line)}
+.gd-fig{flex:0 0 46px;height:52px}.gd-fig svg{width:100%;height:100%}
+.gd-txt em{font-style:normal;color:var(--gold);font-weight:600;margin-left:4px;font-size:12px;border:1px solid var(--gold);border-radius:999px;padding:1px 7px}
+.gd-txt small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+.legend small,.dlg-opts small{display:block;color:var(--gold);font-size:11px}

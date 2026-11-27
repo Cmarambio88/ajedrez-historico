@@ -1,7 +1,7 @@
 import os
 from playwright.sync_api import sync_playwright
 import urllib.request
-URL='http://localhost:8766/index.html'; INIT="localStorage.setItem('ajh-server','http://localhost:8767');"
+URL='http://localhost:8766/index.html'; INIT="localStorage.setItem('ajh-server','http://localhost:8767');localStorage.setItem('ajh-lang','\"es\"');"
 def S(n): return (8-int(n[1]))*8+'abcdefgh'.index(n[0])
 def tap(pg,sq):
     b=pg.query_selector(f'#board .sq[data-s="{S(sq)}"]').bounding_box(); pg.mouse.click(b['x']+b['width']/2,b['y']+b['height']/2); pg.wait_for_timeout(60)
@@ -42,7 +42,7 @@ with sync_playwright() as p:
     A.wait_for_timeout(9000); print('tras fallos de red, A ve:',repr(log(A)[-14:]))
     # tercero = espectador
     C=newpage('C'); C.click('[data-go=online]'); C.fill('#codeIn',code.lower()); C.click('#btnJoin'); C.wait_for_timeout(3300)
-    print('C (3.ª persona):',st(C),'| jugadas vistas:',len(__import__('re').findall('→',log(C))))
+    print('C (3.ª persona):',st(C),'| jugadas vistas:',len(C.query_selector_all('#moves tbody tr')))
     # mate del pastor para probar fin y rendición
     A.screenshot(path='/tmp/t/o_game.png')
     A.click('#btnMenu'); A.click('#mResign'); A.wait_for_timeout(200); A.click('#dlgBtns .btn.danger'); A.wait_for_timeout(1200)

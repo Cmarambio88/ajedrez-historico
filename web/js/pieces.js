@@ -605,8 +605,16 @@ FACTIONS.samurai = {
 };
 
 const GLYPH = { K:'♚', Q:'♛', R:'♜', B:'♝', N:'♞', P:'♟' };
-let showGlyph = true;
+let showGlyph = true, classicShapes = false;
 
+function _mix(h, to, a){
+  const p = x => [1,3,5].map(i => parseInt(x.slice(i,i+2),16)), A = p(h), B = p(to);
+  return '#' + A.map((v,i) => Math.round(v + (B[i]-v)*a).toString(16).padStart(2,'0')).join('');
+}
+function _classic(type, f){
+  const lum = (0.299*parseInt(f.fill.slice(1,3),16) + 0.587*parseInt(f.fill.slice(3,5),16) + 0.114*parseInt(f.fill.slice(5,7),16)) / 255;
+  return stauntonPiece(type, f.fill, lum < 0.4 ? _mix(f.fill,'#ffffff',.4) : _mix(f.fill,'#000000',.45), f.rim);
+}
 function pieceSVG(type, fk, opts={}){
   const f = FACTIONS[fk];
   const base = `<path d="M17 84 V88.5 A33 6.5 0 0 0 83 88.5 V84 Z" fill="${f.baseDark}" ${st(1.4)}/>`
@@ -616,5 +624,5 @@ function pieceSVG(type, fk, opts={}){
     ? `<circle cx="83" cy="6" r="7.5" fill="${f.badgeFill||f.base}" stroke="${f.rim}" stroke-width="1.3"/>`
       + `<text x="83" y="9.6" text-anchor="middle" font-size="10.5" fill="#fff" font-family="'DejaVu Sans','Segoe UI Symbol','Apple Symbols',sans-serif">${GLYPH[type]}︎</text>`
     : '';
-  return `<svg viewBox="10 -2 80 94" overflow="visible" style="overflow:visible" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${base}${f.draw[type]()}${badge}</svg>`;
+  return `<svg viewBox="10 -2 80 94" overflow="visible" style="overflow:visible" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${base}${(classicShapes && typeof stauntonPiece === 'function') ? _classic(type, f) : f.draw[type]()}${badge}</svg>`;
 }

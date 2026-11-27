@@ -14,6 +14,8 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewAssetLoader
 import java.io.File
 
@@ -57,6 +59,15 @@ class MainActivity : Activity() {
         }
         setContentView(web)
 
+        // Android 15+ dibuja la app bajo las barras del sistema: se deja un margen para que el juego no quede tapado.
+        ViewCompat.setOnApplyWindowInsetsListener(web) { v, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.ime()
+            )
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            WindowInsetsCompat.CONSUMED
+        }
+
         if (savedInstanceState == null) {
             web.loadUrl("https://appassets.androidplatform.net/assets/index.html")
         } else {
@@ -85,19 +96,19 @@ class MainActivity : Activity() {
     /** Puente hacia funciones del teléfono; solo lo ve la página del juego. */
     inner class Bridge {
         @JavascriptInterface
-        fun share(text: String) {
+        fun share(text: String, title: String) {
             runOnUiThread {
                 val send = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     putExtra(Intent.EXTRA_TEXT, text)
                 }
-                startActivity(Intent.createChooser(send, "Invitar a un amigo"))
+                startActivity(Intent.createChooser(send, title))
             }
         }
 
         /** Guarda el archivo en la caché de la app y abre el menú «Compartir» (Drive, correo, WhatsApp…). */
         @JavascriptInterface
-        fun shareFile(name: String, mime: String, content: String) {
+        fun shareFile(name: String, mime: String, content: String, title: String) {
             runOnUiThread {
                 try {
                     val dir = File(cacheDir, "export").apply { mkdirs() }
@@ -109,9 +120,9 @@ class MainActivity : Activity() {
                         putExtra(Intent.EXTRA_STREAM, uri)
                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    startActivity(Intent.createChooser(send, "Exportar jugadas"))
+                    startActivity(Intent.createChooser(send, title))
                 } catch (e: Exception) {
-                    android.widget.Toast.makeText(this@MainActivity, "No se pudo exportar: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                    android.widget.Toast.makeText(this@MainActivity, "${e.message}", android.widget.Toast.LENGTH_LONG).show()
                 }
             }
         }

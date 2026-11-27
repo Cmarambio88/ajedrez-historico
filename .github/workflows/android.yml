@@ -34,9 +34,16 @@ jobs:
         run: yes | "$ANDROID_HOME"/cmdline-tools/*/bin/sdkmanager --licenses > /dev/null || true
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.7
+          gradle-version: 8.11.1
       - name: Compilar
         run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Compilar paquete AAB de Play Store (sin firmar)
+        run: gradle :app:bundleRelease --no-daemon --stacktrace
+      - name: Guardar AAB como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: ajedrez-historico-aab-sin-firmar
+          path: app/build/outputs/bundle/release/app-release.aab
       - name: Guardar APK como artefacto
         uses: actions/upload-artifact@v4
         with:

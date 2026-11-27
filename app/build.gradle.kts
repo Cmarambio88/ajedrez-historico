@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace = "cl.ajedrezhistorico"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "cl.ajedrezhistorico"
         minSdk = 24
-        targetSdk = 34
-        versionCode = 2
-        versionName = "1.1.0"
+        targetSdk = 36
+        versionCode = 3
+        versionName = "1.2.0"
     }
 
     buildTypes {

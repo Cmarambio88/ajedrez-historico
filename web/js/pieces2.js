@@ -359,7 +359,7 @@ for (const [k, col, shade, accent, nm, blurb] of [
   FACTIONS[k] = {
     name:nm, era:'Ajedrez clásico', blurb,
     fill:col, base:col, baseDark:shade, rim:accent, badgeFill: k==='blancas' ? '#8a7a52' : '#5a5148',
-    names:{K:'Rey',Q:'Dama',R:'Torre',B:'Alfil',N:'Caballo',P:'Peón'},
+    names:{K:'Rey',Q:'Reina',R:'Torre',B:'Alfil',N:'Caballo',P:'Peón'},
     draw:{}
   };
   for (const t of 'KQRBNP') FACTIONS[k].draw[t] = () => stauntonPiece(t, col, k==='blancas' ? '#a89c7e' : '#6c635a', accent);

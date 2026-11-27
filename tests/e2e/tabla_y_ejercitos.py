@@ -2,7 +2,7 @@
 import os, json
 from playwright.sync_api import sync_playwright
 CH=os.environ.get('CHROME','/usr/bin/google-chrome'); URL='http://localhost:8766/index.html'
-INIT="localStorage.setItem('ajh-server','http://localhost:8767');"
+INIT="localStorage.setItem('ajh-server','http://localhost:8767');localStorage.setItem('ajh-lang','\"es\"');"
 def S(n): return (8-int(n[1]))*8+'abcdefgh'.index(n[0])
 def tap(pg,sq):
     b=pg.query_selector(f'#board .sq[data-s="{S(sq)}"]').bounding_box(); pg.mouse.click(b['x']+b['width']/2,b['y']+b['height']/2); pg.wait_for_timeout(60)
@@ -32,13 +32,13 @@ with sync_playwright() as p:
     check('aparece diálogo de fin de partida', A.is_visible('#dlg') and 'Fin de la partida' in A.inner_text('#dlg'))
     A.click('#dlg button:has-text("Ver tablero")'); A.wait_for_timeout(300)
     A.click('#tLog'); A.wait_for_timeout(300)
-    san=A.evaluate(SANQ); check('SAN mate del pastor',san==['e4','e5','Bc4','Nc6','Qh5','Nf6','Qxf7#'],str(san))
+    san=A.evaluate(SANQ); check('SAN mate del pastor (letras en español; PGN en inglés)',san==['e4','e5','Ac4','Cc6','Dh5','Cf6','Dxf7#'],str(san))
     txt=A.inner_text('#moves'); check('resumen con resultado 1-0','1-0' in txt, txt[:120].replace('\n',' '))
     A.screenshot(path='/tmp/t/n_tabla.png')
     # 4) exportar
     with A.expect_download() as d: A.click('#xCsv')
     dl=d.value; csv=open(dl.path(),encoding='utf-8-sig',newline='').read(); rows=csv.strip().split('\r\n')
-    check('CSV: cabecera + 7 filas',len(rows)==8 and rows[0].startswith('"N.º jugada";"Bando"') and '"Qxf7#"' in rows[7] and 'Burguesía' in rows[2],str(rows[-1:])+' | '+dl.suggested_filename)
+    check('CSV: cabecera + 7 filas',len(rows)==8 and rows[0].startswith('"N.º jugada";"Bando"') and '"Dxf7#"' in rows[7] and 'Burguesía' in rows[2],str(rows[-1:])+' | '+dl.suggested_filename)
     with A.expect_download() as d: A.click('#xPgn')
     pgn=open(d.value.path(),encoding='utf-8').read()
     check('PGN válido',all(s in pgn for s in ['[White "Proletariado"]','[Black "Burguesía"]','[Result "1-0"]','1. e4 e5 2. Bc4 Nc6 3. Qh5 Nf6 4. Qxf7# 1-0']),pgn.replace('\n',' | '))
@@ -55,7 +55,7 @@ with sync_playwright() as p:
     B.goto(URL); B.wait_for_timeout(400); B.click('[data-go=pvp]'); B.click('#btnStart'); B.wait_for_timeout(300)
     for a,b in [('g1','f3'),('a7','a6'),('d2','d3'),('a6','a5'),('b1','d2'),('a5','a4'),('e2','e4'),('a4','a3'),('f1','e2'),('h7','h6'),('e1','g1')]: mv(B,a,b)
     B.click('#tLog'); B.wait_for_timeout(300)
-    san=B.evaluate(SANQ); check('SAN: Nf3, Nbd2 desambiguado y O-O',san[0]=='Nf3' and san[4]=='Nbd2' and san[-1]=='O-O',str(san))
+    san=B.evaluate(SANQ); check('SAN: Nf3, Nbd2 desambiguado y O-O',san[0]=='Cf3' and san[4]=='Cbd2' and san[-1]=='O-O',str(san))
     B.click('#xCsv'); B.wait_for_timeout(200)
     sf=B.evaluate("window.__sf"); check('puente nativo shareFile recibe csv',sf and sf[0].endswith('.csv') and sf[1]=='text/csv' and 'O-O' in sf[2],str(sf[:2]) if sf else 'nada')
     B.click('#xPgn'); B.wait_for_timeout(200)

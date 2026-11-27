@@ -1,7 +1,7 @@
 import os
 from playwright.sync_api import sync_playwright
 import time
-URL='http://localhost:8766/index.html'; INIT="localStorage.setItem('ajh-server','http://localhost:8767');"
+URL='http://localhost:8766/index.html'; INIT="localStorage.setItem('ajh-server','http://localhost:8767');localStorage.setItem('ajh-lang','\"es\"');"
 def S(n): return (8-int(n[1]))*8+'abcdefgh'.index(n[0])
 def tap(pg,sq):
     b=pg.query_selector(f'#board .sq[data-s="{S(sq)}"]').bounding_box(); pg.mouse.click(b['x']+b['width']/2,b['y']+b['height']/2); pg.wait_for_timeout(60)
@@ -38,7 +38,7 @@ with sync_playwright() as p:
     # ---- nivel 7: no bloquea
     A.click('[data-go=ai]'); A.click('#levels button[data-n="7"]'); A.click('#btnStart'); A.wait_for_timeout(300)
     A.evaluate("window.__t=0;setInterval(()=>window.__t++,50)")
-    mv(A,'e2','e4'); t0=time.time(); A.wait_for_function("(document.getElementById('moves').textContent.match(/→/g)||[]).length>=2",timeout=30000)
+    mv(A,'e2','e4'); t0=time.time(); A.wait_for_function("document.querySelectorAll('#moves tbody tr').length>=2",timeout=30000)
     dt=time.time()-t0; tk=A.evaluate("window.__t"); print(f'nivel 7 pensó {dt:.1f}s, ticks {tk} (≈{int(dt*20)})')
     # cambiar de pantalla mientras piensa y volver: no se cuela jugada
     mv(A,'d2','d4'); A.wait_for_timeout(300); A.evaluate("window.__back()"); A.wait_for_timeout(300)

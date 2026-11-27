@@ -2,10 +2,21 @@
 
 Ajedrez 2D para Android con **ejércitos de la historia** en lugar de piezas clásicas: cada rey, dama, torre, alfil, caballo y peón es una figura ilustrada propia de su facción. Software libre (licencia MIT).
 
+¿Quieres publicarlo en Google Play y cobrar? Mira [docs/MONETIZACION.md](docs/MONETIZACION.md).
+
 ## Ejércitos
 
 Grande Armée (Napoleón) · Imperio Mongol (Gengis Kan) · Ejército Rojo · Wehrmacht · Imperio Azteca · Ejército Británico (1815) · Conquistadores (Hernán Cortés como rey y La Malinche como reina) · Samuráis (1274–1281) · **Atenas** (Pericles) · **Persia** (Jerjes I) · **Proletariado** (Lenin y Krúpskaya) · **Burguesía** (Carl Menger y Ayn Rand) · **Estados Unidos** (Vietnam, 1968) · **Vietnam** (Ho Chi Minh) · y un juego de **piezas clásicas blancas y negras** (estilo Staunton).
 Puedes enfrentar a cualquier pareja de ejércitos; la pantalla de preparativos trae «Duelos históricos» para elegir parejas con un toque.
+
+## Idiomas
+Español, English, Français y Português. Se elige solo según el idioma del teléfono y se puede cambiar en Ajustes → Idioma. Los nombres de los ejércitos y de cada pieza también están traducidos; la notación de la tabla usa las letras de cada idioma, y el PGN exportado siempre usa la notación internacional.
+
+## Ayudas para no confundirse con las piezas
+- Cada ejército tiene su propia figura para cada pieza, y **no todos tienen una «reina» literal** (p. ej. un general o un corresponsal). Por eso, al tocar cualquier pieza —propia o rival— aparece una ficha con su nombre, su **papel en el ajedrez** (Rey, Reina, Torre, Alfil, Caballo, Peón) y cómo se mueve.
+- Botón **Guía** con las 12 piezas de la partida y su movimiento.
+- Opción **Formas de piezas clásicas** (Ajustes): usa las siluetas del ajedrez de siempre con los colores de cada ejército.
+- Símbolo clásico en cada pieza (activado por defecto), última jugada y jaque resaltados.
 
 ## Tabla de jugadas exportable
 En la partida, el botón de bitácora muestra una tabla con cada jugada en notación algebraica estándar (SAN), bando, pieza, origen y destino, capturas y jaques, más un resumen (jugadas, capturas por bando, resultado). Se exporta como **CSV** (separador `;`, abre directo en Excel en español), como **PGN** (compatible con Chess.com, Lichess y otros programas) o se copia al portapapeles. En Android se abre el menú «Compartir» (Drive, correo, WhatsApp…).
